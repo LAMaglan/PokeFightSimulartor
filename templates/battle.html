@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Battle Result</title>
+</head>
+<body>
+    <h1>Battle Result</h1>
+
+    <h2>Winner: {{ battle_result.winner }}</h2>
+
+    <h3>Stats:</h3>
+    <ul>
+        <li>Pokemon 1 total stats: {{ battle_result.pokemon1_total_stats }}</li>
+        <li>Pokemon 2 total stats: {{ battle_result.pokemon2_total_stats }}</li>
+    </ul>
+
+    <a href="/">Battle again</a>
+</body>
+</html>
