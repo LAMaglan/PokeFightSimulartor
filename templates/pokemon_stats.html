@@ -19,6 +19,20 @@
         <!-- Add more as needed -->
     </div>
 
+    <h3>Type:</h3>
+    <div class="type-icons" style="display: flex;">
+        {% for type in pokemon.types %}
+            <div class="type-icon">
+                <!-- Display type name -->
+                <p>{{ type | capitalize }}</p>
+                <!-- Display type icon -->
+                <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/types/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon">
+                <!-- Or use the other URL if preferred -->
+                <!-- <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/type-logos/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon"> -->
+            </div>
+        {% endfor %}
+    </div>
+
     <h3>Stats:</h3>
     <ul>
         {% for stat, value in pokemon_stats.items() %}
