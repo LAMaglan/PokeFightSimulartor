@@ -9,7 +9,40 @@ Frontend with HTML/Jinja
 
 # General
 
-To run, install poetry from [here](https://python-poetry.org/docs/)
+Can run with poetry locally, or with docker
+
+## Container (docker)
+
+To run with docker, install docker from [here](https://docs.docker.com/engine/install/)
+
+Build the docker image
+
+```
+docker build -t <chosen image name>
+```
+
+Run the docker container
+
+
+```docker
+docker run -d -p 8000:80 <name from previous step>
+```
+
+
+On local PC, will run on http://127.0.0.1:8000 (open in a browser)
+
+See swagger docs in `/docs`, e.g.
+`http://127.0.0.1:8000/docs`
+
+To stop the docker container, run
+```docker
+docker stop <name of container, can get from `docker ps`>
+```
+
+
+## Poetry (local)
+
+To run with poetry, install poetry from [here](https://python-poetry.org/docs/)
 
 activate poetry environment
 
