@@ -1,8 +1,8 @@
 Pokemon fight simulator using FastAPI.
 <br>
-Details etrieved from https://pokeapi.co/ 
+Details and sprites retrieved from https://pokeapi.co/ 
 <br>
-Sprites retrieved from https://github.com/msikma/pokesprite (explicit for types)
+Sprites for typesretrieved from https://github.com/msikma/pokesprite
 <br>
 Frontend with HTML/Jinja
 
