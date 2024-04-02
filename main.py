@@ -27,7 +27,7 @@ async def calculate_stats_total(stats: dict):
     return sum(stats.values())
 
 # Define routes
-@app.get("/", response_class=Jinja2Templates.TemplateResponse)
+@app.get("/")
 async def read_pokemon_form(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
