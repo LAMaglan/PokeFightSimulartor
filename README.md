@@ -39,6 +39,17 @@ To stop the docker container, run
 docker stop <name of container, can get from `docker ps`>
 ```
 
+Alternatively, can run without the `-d` flag
+```docker
+docker run -p 8000:80 <name from previous step>
+```
+<br>
+The docker container will be "removed" when terminal/process is shut
+(i.e. no need to manually stop).
+<br>
+This latter approach is more useful for logging purposes,
+<br>
+unless logging is written to file (see logging_config.py)
 
 ## Poetry (local)
 
