@@ -1,8 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import httpx
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 # Define Pokemon class
 class Pokemon(BaseModel):
@@ -24,13 +27,17 @@ async def calculate_stats_total(stats: dict):
     return sum(stats.values())
 
 # Define routes
+@app.get("/", response_class=Jinja2Templates.TemplateResponse)
+async def read_pokemon_form(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 @app.get("/pokemon/{pokemon_name}")
 async def read_pokemon(pokemon_name: str):
     pokemon_stats = await get_pokemon_stats(pokemon_name)
     return {"pokemon_stats": pokemon_stats}
 
 
-@app.get("/battle/{pokemon1_name}/{pokemon2_name}")
+@app.get("/battle")
 async def battle(pokemon1_name: str, pokemon2_name: str):
     pokemon1_stats = await get_pokemon_stats(pokemon1_name)
     pokemon2_stats = await get_pokemon_stats(pokemon2_name)
