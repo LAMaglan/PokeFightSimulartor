@@ -1,6 +1,9 @@
 Pokemon fight simulator using FastAPI.
+<br>
 Details etrieved from https://pokeapi.co/ 
+<br>
 Sprites retrieved from https://github.com/msikma/pokesprite (explicit for types)
+<br>
 Frontend with HTML/Jinja
 
 To run, install poetry from [here](https://python-poetry.org/docs/)
