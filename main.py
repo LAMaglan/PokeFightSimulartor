@@ -1,7 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import httpx
+from logging_config import get_logger  # Adjust the import statement according to your project structure
+
+# __name__ will set logger name as the file name: 'main'
+logger = get_logger(__name__)  
 
 app = FastAPI()
 
@@ -28,6 +33,13 @@ async def get_pokemon(pokemon_name: str):
 async def calculate_stats_total(stats: dict):
     return sum(stats.values())
 
+
+# Custom HTTPException handler for FastAPI
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.error(f"HTTP Exception occurred: {exc.detail}")
+    return JSONResponse(content={"detail": exc.detail}, status_code=exc.status_code)
+
 # Define routes
 @app.get("/")
 async def read_pokemon_form(request: Request):
@@ -35,44 +47,56 @@ async def read_pokemon_form(request: Request):
 
 @app.get("/pokemon/{pokemon_name}")
 async def read_pokemon(request: Request, pokemon_name: str):
-    pokemon_stats, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
-    return templates.TemplateResponse("pokemon_stats.html", {
-        "request": request,
-        "pokemon": {
-            "name": pokemon_name,
-            "sprites": pokemon_sprites,
-            "types": pokemon_types
-        },
-        "pokemon_stats": pokemon_stats
-    })
+    try:
+        logger.info(f"Fetching data for {pokemon_name}.")
+        pokemon_stats, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
+        response = templates.TemplateResponse("pokemon_stats.html", {
+            "request": request,
+            "pokemon": {
+                "name": pokemon_name,
+                "sprites": pokemon_sprites,
+                "types": pokemon_types
+            },
+            "pokemon_stats": pokemon_stats
+        })
+        logger.info(f"Data for {pokemon_name} successfully fetched and returned.")
+        return response
+    except HTTPException as exc:
+        logger.error(f"Error fetching data for {pokemon_name}: {str(exc)}")
+        raise
 
 
 @app.get("/battle")
 async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
-    pokemon1_stats, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
-    pokemon2_stats, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
+    try:
+        logger.info(f"Initiating battle between {pokemon1_name} and {pokemon2_name}.")
+        pokemon1_stats, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
+        pokemon2_stats, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
 
-    pokemon1_total = await calculate_stats_total(pokemon1_stats)
-    pokemon2_total = await calculate_stats_total(pokemon2_stats)
+        pokemon1_total = await calculate_stats_total(pokemon1_stats)
+        pokemon2_total = await calculate_stats_total(pokemon2_stats)
 
-    if pokemon1_total > pokemon2_total:
-        winner = pokemon1_name
-    elif pokemon1_total < pokemon2_total:
-        winner = pokemon2_name
-    else:
-        winner = "It's a tie!"
+        if pokemon1_total > pokemon2_total:
+            winner = pokemon1_name
+        elif pokemon1_total < pokemon2_total:
+            winner = pokemon2_name
+        else:
+            winner = "It's a tie!"
 
-    return templates.TemplateResponse("battle.html", {
-        "request": request,
-        "pokemon1": {
-            "name": pokemon1_name,
-            "sprite": pokemon1_sprites['front_default'],
-            "total_stats": pokemon1_total  
-        },
-        "pokemon2": {
-            "name": pokemon2_name,
-            "sprite": pokemon2_sprites['front_default'],
-            "total_stats": pokemon2_total  
-        },
-        "winner": winner
-    })
+        return templates.TemplateResponse("battle.html", {
+            "request": request,
+            "pokemon1": {
+                "name": pokemon1_name,
+                "sprite": pokemon1_sprites['front_default'],
+                "total_stats": pokemon1_total  
+            },
+            "pokemon2": {
+                "name": pokemon2_name,
+                "sprite": pokemon2_sprites['front_default'],
+                "total_stats": pokemon2_total  
+            },
+            "winner": winner
+        })
+    except HTTPException as exc:
+        logger.error(f"Error during battle: {str(exc)}")
+        raise
