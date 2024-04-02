@@ -9,6 +9,16 @@
 
     <h2>Pokemon: {{ pokemon.name }}</h2>
 
+    <div id="sprites">
+        {% if pokemon.sprites.front_default %}
+            <img src="{{ pokemon.sprites.front_default }}" alt="Front default">
+        {% endif %}
+        {% if pokemon.sprites.front_shiny %}
+            <img src="{{ pokemon.sprites.front_shiny }}" alt="Front shiny">
+        {% endif %}
+        <!-- Add more as needed -->
+    </div>
+
     <h3>Stats:</h3>
     <ul>
         {% for stat, value in pokemon_stats.items() %}
