@@ -32,9 +32,12 @@ async def read_pokemon_form(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/pokemon/{pokemon_name}")
-async def read_pokemon(pokemon_name: str):
+async def read_pokemon(request: Request, pokemon_name: str):
     pokemon_stats = await get_pokemon_stats(pokemon_name)
-    return {"pokemon_stats": pokemon_stats}
+    return templates.TemplateResponse("pokemon_stats.html", 
+                                      {"request": request, 
+                                       "pokemon": {"name": pokemon_name}, 
+                                       "pokemon_stats": pokemon_stats})
 
 
 @app.get("/battle")

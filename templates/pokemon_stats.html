@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemon Stats</title>
+</head>
+<body>
+    <h1>Pokemon Stats</h1>
+
+    <h2>Pokemon: {{ pokemon.name }}</h2>
+
+    <h3>Stats:</h3>
+    <ul>
+        {% for stat, value in pokemon_stats.items() %}
+            <li>{{ stat }}: {{ value }}</li>
+        {% endfor %}
+    </ul>
+    
+    <a href="/">Search again</a>
+</body>
+</html>
