@@ -49,8 +49,8 @@ async def read_pokemon(request: Request, pokemon_name: str):
 
 @app.get("/battle")
 async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
-    pokemon1_stats = await get_pokemon(pokemon1_name)
-    pokemon2_stats = await get_pokemon(pokemon2_name)
+    pokemon1_stats, _, _ = await get_pokemon(pokemon1_name)
+    pokemon2_stats, _, _ = await get_pokemon(pokemon2_name)
 
     pokemon1_total = await calculate_stats_total(pokemon1_stats)
     pokemon2_total = await calculate_stats_total(pokemon2_stats)
