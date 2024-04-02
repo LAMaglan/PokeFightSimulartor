@@ -19,6 +19,13 @@
         <!-- Add more as needed -->
     </div>
 
+    <h3>Types:</h3>
+    <ul>
+        {% for type in pokemon.types %}
+            <li>{{ type | capitalize }}</li>
+        {% endfor %}
+    </ul>
+
     <h3>Stats:</h3>
     <ul>
         {% for stat, value in pokemon_stats.items() %}
