@@ -7,12 +7,25 @@
 <body>
     <h1>Pokemon Battle</h1>
 
-    <form action="/battle" method="get">
+    <form id="battleForm" action="/battle" method="get">
         <label for="pokemon1_name">Pokemon 1:</label><br>
-        <input type="text" id="pokemon1_name" name="pokemon1_name"><br>
+        <input type="text" id="pokemon1_name" name="pokemon1_name">
+        <button type="button" onclick="redirectToStats('pokemon1_name')">View Stats</button><br>
         <label for="pokemon2_name">Pokemon 2:</label><br>
-        <input type="text" id="pokemon2_name" name="pokemon2_name"><br><br>
+        <input type="text" id="pokemon2_name" name="pokemon2_name">
+        <button type="button" onclick="redirectToStats('pokemon2_name')">View Stats</button><br><br>
         <input type="submit" value="Battle!">
     </form>
+
+    <script>
+        function redirectToStats(inputId) {
+            var pokemonName = document.getElementById(inputId).value;
+            if(pokemonName) {
+                window.location.href = '/pokemon/' + pokemonName;
+            } else {
+                alert('Please enter a Pokemon name.');
+            }
+        }
+    </script>
 </body>
 </html>
