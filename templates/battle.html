@@ -7,13 +7,21 @@
 <body>
     <h1>Battle Result</h1>
 
-    <h2>Winner: {{ battle_result.winner }}</h2>
+    <div class="battle">
+        <div class="pokemon" id="pokemon1">
+            <h2>{{ pokemon1.name | capitalize }}</h2>
+            <img src="{{ pokemon1.sprite }}" alt="{{ pokemon1.name }}" />
+            <p>Total stats: {{ pokemon1.total_stats }}</p>
+        </div>
 
-    <h3>Stats:</h3>
-    <ul>
-        <li>Pokemon 1 total stats: {{ battle_result.pokemon1_total_stats }}</li>
-        <li>Pokemon 2 total stats: {{ battle_result.pokemon2_total_stats }}</li>
-    </ul>
+        <div class="pokemon" id="pokemon2">
+            <h2>{{ pokemon2.name | capitalize }}</h2>
+            <img src="{{ pokemon2.sprite }}" alt="{{ pokemon2.name }}" />
+            <p>Total stats: {{ pokemon2.total_stats }}</p>
+        </div>
+    </div>
+
+    <h2>Winner: {{ winner | capitalize }}</h2>
 
     <a href="/">Battle again</a>
 </body>
