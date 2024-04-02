@@ -49,8 +49,8 @@ async def read_pokemon(request: Request, pokemon_name: str):
 
 @app.get("/battle")
 async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
-    pokemon1_stats, _, _ = await get_pokemon(pokemon1_name)
-    pokemon2_stats, _, _ = await get_pokemon(pokemon2_name)
+    pokemon1_stats, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
+    pokemon2_stats, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
 
     pokemon1_total = await calculate_stats_total(pokemon1_stats)
     pokemon2_total = await calculate_stats_total(pokemon2_stats)
@@ -62,10 +62,17 @@ async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
     else:
         winner = "It's a tie!"
 
-    battle_result = {
-        "winner": winner,
-        "pokemon1_total_stats": pokemon1_total,
-        "pokemon2_total_stats": pokemon2_total,
-    }
-
-    return templates.TemplateResponse("battle.html", {"request": request, "battle_result": battle_result})
+    return templates.TemplateResponse("battle.html", {
+        "request": request,
+        "pokemon1": {
+            "name": pokemon1_name,
+            "sprite": pokemon1_sprites['front_default'],
+            "total_stats": pokemon1_total  
+        },
+        "pokemon2": {
+            "name": pokemon2_name,
+            "sprite": pokemon2_sprites['front_default'],
+            "total_stats": pokemon2_total  
+        },
+        "winner": winner
+    })
