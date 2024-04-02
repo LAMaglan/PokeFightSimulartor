@@ -20,6 +20,9 @@ async def get_pokemon_stats(pokemon_name: str):
         else:
             raise HTTPException(status_code=response.status_code, detail="Pokemon not found")
 
+async def calculate_stats_total(stats: dict):
+    return sum(stats.values())
+
 # Define routes
 @app.get("/pokemon/{pokemon_name}")
 async def read_pokemon(pokemon_name: str):
@@ -27,11 +30,25 @@ async def read_pokemon(pokemon_name: str):
     return {"pokemon_stats": pokemon_stats}
 
 
-@app.post("/fight/")
-def create_fight(pokemon1: Pokemon, pokemon2: Pokemon):
-    # Mock fighting logic
-    if "a" in pokemon1.name:
-        winner = pokemon1.name
+@app.get("/battle/{pokemon1_name}/{pokemon2_name}")
+async def battle(pokemon1_name: str, pokemon2_name: str):
+    pokemon1_stats = await get_pokemon_stats(pokemon1_name)
+    pokemon2_stats = await get_pokemon_stats(pokemon2_name)
+
+    pokemon1_total = await calculate_stats_total(pokemon1_stats)
+    pokemon2_total = await calculate_stats_total(pokemon2_stats)
+
+    if pokemon1_total > pokemon2_total:
+        winner = pokemon1_name
+    elif pokemon1_total < pokemon2_total:
+        winner = pokemon2_name
     else:
-        winner = pokemon2.name
-    return {"winner": winner}
+        winner = "It's a tie!"
+
+    return {
+        "battle_result": {
+            "winner": winner,
+            "pokemon1_total_stats": pokemon1_total,
+            "pokemon2_total_stats": pokemon2_total,
+        }
+    }
