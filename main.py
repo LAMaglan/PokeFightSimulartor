@@ -19,9 +19,11 @@ async def get_pokemon(pokemon_name: str):
             pokemon_data = response.json()
             stats = {stat["stat"]["name"]: stat["base_stat"] for stat in pokemon_data["stats"]}
             sprites = pokemon_data["sprites"]
-            return stats, sprites
+            types = [t["type"]["name"] for t in pokemon_data["types"]]  
+            return stats, sprites, types
         else:
             raise HTTPException(status_code=response.status_code, detail="Pokemon not found")
+
 
 async def calculate_stats_total(stats: dict):
     return sum(stats.values())
@@ -33,10 +35,16 @@ async def read_pokemon_form(request: Request):
 
 @app.get("/pokemon/{pokemon_name}")
 async def read_pokemon(request: Request, pokemon_name: str):
-    pokemon_stats, pokemon_sprites = await get_pokemon(pokemon_name)
-    return templates.TemplateResponse("pokemon_stats.html", {"request": request, 
-                                                             "pokemon": {"name": pokemon_name, "sprites": pokemon_sprites}, 
-                                                             "pokemon_stats": pokemon_stats})
+    pokemon_stats, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
+    return templates.TemplateResponse("pokemon_stats.html", {
+        "request": request,
+        "pokemon": {
+            "name": pokemon_name,
+            "sprites": pokemon_sprites,
+            "types": pokemon_types
+        },
+        "pokemon_stats": pokemon_stats
+    })
 
 
 @app.get("/battle")
