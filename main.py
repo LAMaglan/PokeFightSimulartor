@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import httpx
 from logging_config import get_logger  # Adjust the import statement according to your project structure
-import os
+from typing import List
 
 # __name__ will set logger name as the file name: 'main'
 logger = get_logger(__name__)  
@@ -67,10 +67,9 @@ async def read_pokemon_form(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-# TODO TESTING
-# Now you can use pokemon_names_list in your endpoints:
-@app.get("/list_pokemon")
-async def list_pokemon():
+# Endpoint to pass all names to HTML as JSON
+@app.get("/pokemon_names", response_model=List[str])
+async def get_pokemon_names():
     return pokemon_names_list
 
 
