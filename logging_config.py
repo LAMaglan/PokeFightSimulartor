@@ -2,6 +2,7 @@
 import logging
 import sys
 
+
 def get_logger(name: str):
     # Create a logger object.
     logger = logging.getLogger(name)
@@ -16,7 +17,9 @@ def get_logger(name: str):
     stream_handler.setLevel(logging.INFO)
 
     # Create a formatter.
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
 
     # Set the formatter for the stream handler.
     stream_handler.setFormatter(formatter)

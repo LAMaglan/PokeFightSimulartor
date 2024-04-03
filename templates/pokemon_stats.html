@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Pokemon Stats</title>
 </head>
+
 <body>
     <h1>Pokemon Stats</h1>
 
@@ -11,10 +13,10 @@
 
     <div id="sprites">
         {% if pokemon.sprites.front_default %}
-            <img src="{{ pokemon.sprites.front_default }}" alt="Front default">
+        <img src="{{ pokemon.sprites.front_default }}" alt="Front default">
         {% endif %}
         {% if pokemon.sprites.front_shiny %}
-            <img src="{{ pokemon.sprites.front_shiny }}" alt="Front shiny">
+        <img src="{{ pokemon.sprites.front_shiny }}" alt="Front shiny">
         {% endif %}
         <!-- Add more as needed -->
     </div>
@@ -22,24 +24,26 @@
     <h3>Type:</h3>
     <div class="type-icons" style="display: flex;">
         {% for type in pokemon.types %}
-            <div class="type-icon">
-                <!-- Display type name -->
-                <p>{{ type | capitalize }}</p>
-                <!-- Display type icon -->
-                <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/types/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon">
-                <!-- Or use the other URL if preferred -->
-                <!-- <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/type-logos/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon"> -->
-            </div>
+        <div class="type-icon">
+            <!-- Display type name -->
+            <p>{{ type | capitalize }}</p>
+            <!-- Display type icon -->
+            <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/types/gen8/{{ type }}.png"
+                alt="{{ type | capitalize }} icon">
+            <!-- Or use the other URL if preferred -->
+            <!-- <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/type-logos/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon"> -->
+        </div>
         {% endfor %}
     </div>
 
     <h3>Stats:</h3>
     <ul>
         {% for stat, value in pokemon_stats.items() %}
-            <li>{{ stat }}: {{ value }}</li>
+        <li>{{ stat }}: {{ value }}</li>
         {% endfor %}
     </ul>
-    
+
     <a href="/">Search again</a>
 </body>
+
 </html>
