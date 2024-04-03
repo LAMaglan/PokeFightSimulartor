@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import httpx
 from logging_config import get_logger  # Adjust the import statement according to your project structure
+import os
 
 # __name__ will set logger name as the file name: 'main'
 logger = get_logger(__name__)  
@@ -15,6 +16,26 @@ templates = Jinja2Templates(directory="templates")
 # Define Pokemon class
 class Pokemon(BaseModel):
     name: str
+
+
+# Initialize list with all pokemon names
+pokemon_names_list = [] 
+
+# set to arbitrarily high number (FastAPI startup event handler does not accept direct paramaters)
+POKEMON_LIMIT = 2000 
+
+# NOTE: "on_event" deprecated, but still works
+# get list of all pokemon names from pokeapi
+@app.on_event("startup")
+async def on_startup():
+    global pokemon_names_list
+    url = f"https://pokeapi.co/api/v2/pokemon?limit={POKEMON_LIMIT}"  
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        data = response.json()
+        pokemon_names_list = [result['name'] for result in data['results']]
+
 
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
@@ -44,6 +65,14 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.get("/")
 async def read_pokemon_form(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+# TODO TESTING
+# Now you can use pokemon_names_list in your endpoints:
+@app.get("/list_pokemon")
+async def list_pokemon():
+    return pokemon_names_list
+
 
 @app.get("/pokemon/{pokemon_name}")
 async def read_pokemon(request: Request, pokemon_name: str):
