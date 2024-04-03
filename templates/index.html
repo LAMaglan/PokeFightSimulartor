@@ -33,20 +33,35 @@
             }
         }
 
-        // Fetch the pokemon names and populate the datalists
+        // Function that populates a datalist with options that start with the input's value
+        function filterDatalist(inputElement, datalistElement, fullPokemonList) {
+            const searchTerm = inputElement.value.toLowerCase(); // Get the current input value
+            // Clear out the current options
+            datalistElement.innerHTML = "";
+            // Filter the full Pokemon list and add matching items as options
+            fullPokemonList.forEach(pokemon => {
+                if (pokemon.toLowerCase().startsWith(searchTerm)) {
+                    const option = document.createElement('option');
+                    option.value = pokemon;
+                    datalistElement.appendChild(option);
+                }
+            });
+        }
+
+        // Fetch the pokemon names and store them
+        let fullPokemonList = [];
         fetch('/pokemon_names')
             .then(response => response.json())
             .then(data => {
-                const list1 = document.getElementById('pokemon_list1');
-                const list2 = document.getElementById('pokemon_list2');
-                data.forEach(name => {
-                    const option1 = document.createElement('option');
-                    option1.value = name;
-                    const option2 = document.createElement('option');
-                    option2.value = name;
-                    list1.appendChild(option1);
-                    list2.appendChild(option2);
-                });
+                fullPokemonList = data; // Store the full list in a variable
+                const input1 = document.getElementById('pokemon1_name');
+                const input2 = document.getElementById('pokemon2_name');
+                // Attach an input event listener to each input field
+                input1.addEventListener('input', () => filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList));
+                input2.addEventListener('input', () => filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList));
+                // Initially populate both datalists with all names
+                filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList);
+                filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList);
             });
     </script>
 
