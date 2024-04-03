@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import httpx
-from logging_config import get_logger  # Adjust the import statement according to your project structure
+from config.logging_config import get_logger  # Adjust the import statement according to your project structure
 
 # __name__ will set logger name as the file name: 'main'
 logger = get_logger(__name__)  
