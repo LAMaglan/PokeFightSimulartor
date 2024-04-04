@@ -166,7 +166,6 @@ async def read_pokemon(request: Request, pokemon_name: str):
 
         pokemon_stats = vars(pokemon)
         del pokemon_stats["name"]
-        del pokemon_stats["IV"]
         pokemon_stats = revert_stat_names(pokemon_stats)
 
         response = templates.TemplateResponse(
