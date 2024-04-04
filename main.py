@@ -7,6 +7,7 @@ from logging_config import (
     get_logger,
 )  # Adjust the import statement according to your project structure
 from typing import List
+import csv
 
 # __name__ will set logger name as the file name: 'main'
 logger = get_logger(__name__)
@@ -33,6 +34,7 @@ class Pokemon(BaseModel):
 
 # Initialize list with all pokemon names
 pokemon_names_list = []
+type_advantages = {}
 
 # set to arbitrarily high number (FastAPI startup event handler does not accept direct paramaters)
 POKEMON_LIMIT = 2000
@@ -41,7 +43,7 @@ POKEMON_LIMIT = 2000
 # NOTE: "on_event" deprecated, but still works
 # get list of all pokemon names from pokeapi
 @app.on_event("startup")
-async def on_startup():
+async def on_startup_names():
     global pokemon_names_list
     url = f"https://pokeapi.co/api/v2/pokemon?limit={POKEMON_LIMIT}"
     async with httpx.AsyncClient() as client:
@@ -49,6 +51,21 @@ async def on_startup():
         response.raise_for_status()
         data = response.json()
         pokemon_names_list = [result["name"] for result in data["results"]]
+
+
+@app.on_event("startup")
+async def on_startup_types():
+    await parse_types_csv()
+
+
+async def parse_types_csv():
+    global type_advantages
+    with open("data/types.csv", "r") as file:
+        csv_reader = csv.reader(file)
+        headers = next(csv_reader)
+        for row in csv_reader:
+            row_dict = {header: value for header, value in zip(headers[1:], row[1:])}
+            type_advantages[row[0]] = row_dict
 
 
 def clean_stat_names(stats: dict) -> dict:
@@ -133,6 +150,12 @@ async def read_pokemon_form(request: Request):
 @app.get("/pokemon_names", response_model=List[str])
 async def get_pokemon_names():
     return pokemon_names_list
+
+
+# endpoint that shows type advantages as nested dict
+@app.get("/type-advantages")
+async def get_type_advantages():
+    return type_advantages
 
 
 @app.get("/pokemon/{pokemon_name}")
