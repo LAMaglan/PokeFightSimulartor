@@ -27,7 +27,7 @@ class Pokemon(BaseModel):
     speed: int
 
     class Config:
-        allow_mutation = False
+        pass
 
 
 # Initialize list with all pokemon names
