@@ -27,7 +27,7 @@ class Pokemon(BaseModel):
     speed: int
 
     class Config:
-        allow_mutation = False
+        pass
 
 
 # Initialize list with all pokemon names
@@ -58,7 +58,11 @@ def clean_stat_names(stats: dict) -> dict:
     return {key.replace("-", "_"): value for key, value in stats.items()}
 
 
-async def get_pokemon(pokemon_name: str, clean_names: bool = True):
+def revert_stat_names(stats: dict) -> dict:
+    return {key.replace("_", "-"): value for key, value in stats.items()}
+
+
+async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
@@ -68,11 +72,12 @@ async def get_pokemon(pokemon_name: str, clean_names: bool = True):
                 stat["stat"]["name"]: stat["base_stat"]
                 for stat in pokemon_data["stats"]
             }
-            if clean_names:
-                stats = clean_stat_names(stats)
+            stats = clean_stat_names(stats)
+
+            pokemon = Pokemon(name=pokemon_name, **stats)
             sprites = pokemon_data["sprites"]
             types = [t["type"]["name"] for t in pokemon_data["types"]]
-            return stats, sprites, types
+            return pokemon, sprites, types
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
@@ -132,9 +137,15 @@ async def get_pokemon_names():
 async def read_pokemon(request: Request, pokemon_name: str):
     try:
         logger.info(f"Fetching data for {pokemon_name}.")
-        pokemon_stats, pokemon_sprites, pokemon_types = await get_pokemon(
-            pokemon_name, clean_names=False
-        )
+
+        # TODO: now when using clean_names = TRUE, it crashes.
+        # not sure why?
+        pokemon, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
+
+        pokemon_stats = vars(pokemon)
+        del pokemon_stats["name"]
+        pokemon_stats = revert_stat_names(pokemon_stats)
+
         response = templates.TemplateResponse(
             "pokemon_stats.html",
             {
@@ -158,13 +169,10 @@ async def read_pokemon(request: Request, pokemon_name: str):
 async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
     try:
         logger.info(f"Initiating battle between {pokemon1_name} and {pokemon2_name}.")
-        pokemon1_stats, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
-        pokemon2_stats, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
+        pokemon1, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
+        pokemon2, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
 
-        pokemon_1 = Pokemon(name=pokemon1_name, **pokemon1_stats)
-        pokemon_2 = Pokemon(name=pokemon2_name, **pokemon2_stats)
-
-        winner = battle_simulator(pokemon_1, pokemon_2)
+        winner = battle_simulator(pokemon1, pokemon2)
 
         return templates.TemplateResponse(
             "battle.html",
