@@ -19,6 +19,15 @@ templates = Jinja2Templates(directory="templates")
 # Define Pokemon class
 class Pokemon(BaseModel):
     name: str
+    hp: int
+    attack: int
+    defense: int
+    special_attack: int
+    special_defense: int
+    speed: int
+
+    class Config:
+        allow_mutation = False
 
 
 # Initialize list with all pokemon names
@@ -41,7 +50,15 @@ async def on_startup():
         pokemon_names_list = [result["name"] for result in data["results"]]
 
 
-async def get_pokemon(pokemon_name: str):
+def clean_stat_names(stats: dict) -> dict:
+    """
+    Pokeapi has "special-defense" and "special-attack".
+    To avoid syntax errors with python, converting "-" to "_"
+    """
+    return {key.replace("-", "_"): value for key, value in stats.items()}
+
+
+async def get_pokemon(pokemon_name: str, clean_names: bool = True):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
@@ -51,6 +68,8 @@ async def get_pokemon(pokemon_name: str):
                 stat["stat"]["name"]: stat["base_stat"]
                 for stat in pokemon_data["stats"]
             }
+            if clean_names:
+                stats = clean_stat_names(stats)
             sprites = pokemon_data["sprites"]
             types = [t["type"]["name"] for t in pokemon_data["types"]]
             return stats, sprites, types
@@ -62,6 +81,32 @@ async def get_pokemon(pokemon_name: str):
 
 async def calculate_stats_total(stats: dict):
     return sum(stats.values())
+
+
+def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
+    if pokemon1.speed > pokemon2.speed:
+        attacker = pokemon1
+        defender = pokemon2
+    else:
+        attacker = pokemon2
+        defender = pokemon1
+
+    while pokemon1.hp > 0 and pokemon2.hp > 0:
+        if attacker.attack > defender.defense:
+            damage = attacker.attack - defender.defense
+            defender.hp -= damage
+        elif attacker.special_attack > defender.special_defense:
+            damage = attacker.special_attack - defender.special_defense
+            defender.hp -= damage
+        attacker, defender = (
+            defender,
+            attacker,
+        )  # Players switch roles for the next round
+
+    if pokemon1.hp <= 0:
+        return pokemon2.name
+    else:
+        return pokemon1.name
 
 
 # Custom HTTPException handler for FastAPI
@@ -87,7 +132,9 @@ async def get_pokemon_names():
 async def read_pokemon(request: Request, pokemon_name: str):
     try:
         logger.info(f"Fetching data for {pokemon_name}.")
-        pokemon_stats, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
+        pokemon_stats, pokemon_sprites, pokemon_types = await get_pokemon(
+            pokemon_name, clean_names=False
+        )
         response = templates.TemplateResponse(
             "pokemon_stats.html",
             {
@@ -114,15 +161,10 @@ async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
         pokemon1_stats, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
         pokemon2_stats, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
 
-        pokemon1_total = await calculate_stats_total(pokemon1_stats)
-        pokemon2_total = await calculate_stats_total(pokemon2_stats)
+        pokemon_1 = Pokemon(name=pokemon1_name, **pokemon1_stats)
+        pokemon_2 = Pokemon(name=pokemon2_name, **pokemon2_stats)
 
-        if pokemon1_total > pokemon2_total:
-            winner = pokemon1_name
-        elif pokemon1_total < pokemon2_total:
-            winner = pokemon2_name
-        else:
-            winner = "It's a tie!"
+        winner = battle_simulator(pokemon_1, pokemon_2)
 
         return templates.TemplateResponse(
             "battle.html",
@@ -131,12 +173,10 @@ async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
                 "pokemon1": {
                     "name": pokemon1_name,
                     "sprite": pokemon1_sprites["front_default"],
-                    "total_stats": pokemon1_total,
                 },
                 "pokemon2": {
                     "name": pokemon2_name,
                     "sprite": pokemon2_sprites["front_default"],
-                    "total_stats": pokemon2_total,
                 },
                 "winner": winner,
             },
