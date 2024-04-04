@@ -15,10 +15,18 @@
         <datalist id="pokemon_list1"></datalist>
         <button type="button" onclick="redirectToStats('pokemon1_name')">View Stats</button><br>
 
+        <!-- Added level field for Pokemon 1 -->
+        <label for="pokemon1_level">Level:</label><br>
+        <input type="number" id="pokemon1_level" name="pokemon1_level" min="1" max="100"><br><br>
+
         <label for="pokemon2_name">Pokemon 2:</label><br>
         <input list="pokemon_list2" type="text" id="pokemon2_name" name="pokemon2_name">
         <datalist id="pokemon_list2"></datalist>
-        <button type="button" onclick="redirectToStats('pokemon2_name')">View Stats</button><br><br>
+        <button type="button" onclick="redirectToStats('pokemon2_name')">View Stats</button><br>
+
+        <!-- Added level field for Pokemon 2 -->
+        <label for="pokemon2_level">Level:</label><br>
+        <input type="number" id="pokemon2_level" name="pokemon2_level" min="1" max="100"><br><br>
 
         <input type="submit" value="Battle!">
     </form>
@@ -64,7 +72,6 @@
                 filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList);
             });
     </script>
-
 </body>
 
 </html>
