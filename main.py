@@ -26,7 +26,16 @@ class Pokemon(BaseModel):
     special_attack: int
     special_defense: int
     speed: int
-    IV: int = random.randint(0, 31)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._iv = None
+
+    @property
+    def IV(self):
+        if self._iv is None:
+            self._iv = random.randint(0, 31)
+        return self._iv
 
     class Config:
         pass
@@ -103,9 +112,6 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
 
     pokemon1.apply_stat_modifier()
     pokemon2.apply_stat_modifier()
-
-    print(pokemon1.attack)
-    print(pokemon2.attack)
 
     if pokemon1.speed > pokemon2.speed:
         attacker = pokemon1
