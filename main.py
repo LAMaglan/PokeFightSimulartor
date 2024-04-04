@@ -7,6 +7,7 @@ from logging_config import (
     get_logger,
 )  # Adjust the import statement according to your project structure
 from typing import List
+import random
 
 # __name__ will set logger name as the file name: 'main'
 logger = get_logger(__name__)
@@ -25,9 +26,23 @@ class Pokemon(BaseModel):
     special_attack: int
     special_defense: int
     speed: int
+    IV: int = random.randint(0, 31)
 
     class Config:
         pass
+
+    def stat_modifier(self, stat, IV):
+        # TODO: final should be something like
+        # (2 x BaseStat + IV + (EV/4)) x Level / 100
+        return 2 * stat + IV
+
+    def apply_stat_modifier(
+        self,
+        stats={"attack", "special_attack", "speed", "hp", "defense", "special_defense"},
+    ):
+        for stat in stats:
+            if hasattr(self, stat):
+                setattr(self, stat, self.stat_modifier(getattr(self, stat), self.IV))
 
 
 # Initialize list with all pokemon names
@@ -84,11 +99,14 @@ async def get_pokemon(pokemon_name: str):
             )
 
 
-async def calculate_stats_total(stats: dict):
-    return sum(stats.values())
-
-
 def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
+
+    pokemon1.apply_stat_modifier()
+    pokemon2.apply_stat_modifier()
+
+    print(pokemon1.attack)
+    print(pokemon2.attack)
+
     if pokemon1.speed > pokemon2.speed:
         attacker = pokemon1
         defender = pokemon2
@@ -138,12 +156,11 @@ async def read_pokemon(request: Request, pokemon_name: str):
     try:
         logger.info(f"Fetching data for {pokemon_name}.")
 
-        # TODO: now when using clean_names = TRUE, it crashes.
-        # not sure why?
         pokemon, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
 
         pokemon_stats = vars(pokemon)
         del pokemon_stats["name"]
+        del pokemon_stats["IV"]
         pokemon_stats = revert_stat_names(pokemon_stats)
 
         response = templates.TemplateResponse(
