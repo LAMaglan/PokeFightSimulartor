@@ -25,6 +25,7 @@ class Pokemon(BaseModel):
     special_attack: int
     special_defense: int
     speed: int
+    types: List[str]
 
     class Config:
         pass
@@ -74,10 +75,11 @@ async def get_pokemon(pokemon_name: str):
             }
             stats = clean_stat_names(stats)
 
-            pokemon = Pokemon(name=pokemon_name, **stats)
-            sprites = pokemon_data["sprites"]
             types = [t["type"]["name"] for t in pokemon_data["types"]]
-            return pokemon, sprites, types
+            pokemon = Pokemon(name=pokemon_name, **stats, types=types)
+            sprites = pokemon_data["sprites"]
+
+            return pokemon, sprites
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
@@ -138,12 +140,12 @@ async def read_pokemon(request: Request, pokemon_name: str):
     try:
         logger.info(f"Fetching data for {pokemon_name}.")
 
-        # TODO: now when using clean_names = TRUE, it crashes.
-        # not sure why?
-        pokemon, pokemon_sprites, pokemon_types = await get_pokemon(pokemon_name)
+        pokemon, pokemon_sprites = await get_pokemon(pokemon_name)
 
         pokemon_stats = vars(pokemon)
         del pokemon_stats["name"]
+        pokemon_types = pokemon.types
+        del pokemon_stats["types"]
         pokemon_stats = revert_stat_names(pokemon_stats)
 
         response = templates.TemplateResponse(
@@ -169,8 +171,8 @@ async def read_pokemon(request: Request, pokemon_name: str):
 async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
     try:
         logger.info(f"Initiating battle between {pokemon1_name} and {pokemon2_name}.")
-        pokemon1, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
-        pokemon2, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
+        pokemon1, pokemon1_sprites = await get_pokemon(pokemon1_name)
+        pokemon2, pokemon2_sprites = await get_pokemon(pokemon2_name)
 
         winner = battle_simulator(pokemon1, pokemon2)
 
