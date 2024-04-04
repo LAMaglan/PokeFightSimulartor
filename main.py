@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -20,6 +20,7 @@ templates = Jinja2Templates(directory="templates")
 # Define Pokemon class
 class Pokemon(BaseModel):
     name: str
+    level: int = 1
     hp: int
     attack: int
     defense: int
@@ -37,7 +38,7 @@ class Pokemon(BaseModel):
     def stat_modifier(self, stat, IV):
         # TODO: final should be something like
         # (2 x BaseStat + IV + (EV/4)) x Level / 100
-        return 2 * stat + IV
+        return int(((2 * stat + IV) * self.level) / 100)
 
     def apply_stat_modifier(
         self,
@@ -184,11 +185,23 @@ async def read_pokemon(request: Request, pokemon_name: str):
 
 
 @app.get("/battle")
-async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
+async def battle(
+    request: Request,
+    pokemon1_name: str,
+    pokemon2_name: str,
+    pokemon1_level: int = Query(...),
+    pokemon2_level: int = Query(...),
+):
     try:
-        logger.info(f"Initiating battle between {pokemon1_name} and {pokemon2_name}.")
+
         pokemon1, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
         pokemon2, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
+
+        # passed on from index.html
+        pokemon1.level = pokemon1_level
+        pokemon2.level = pokemon2_level
+
+        logger.info(f"Initiating battle between {pokemon1_name} and {pokemon2_name}")
 
         winner = battle_simulator(pokemon1, pokemon2)
 
