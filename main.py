@@ -107,7 +107,7 @@ async def calculate_stats_total(stats: dict):
     return sum(stats.values())
 
 
-def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
+def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
     if pokemon1.speed > pokemon2.speed:
         attacker = pokemon1
         defender = pokemon2
@@ -115,22 +115,31 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
         attacker = pokemon2
         defender = pokemon1
 
-    while pokemon1.hp > 0 and pokemon2.hp > 0:
-        if attacker.attack > defender.defense:
-            damage = attacker.attack - defender.defense
+    while attacker.hp > 0 and defender.hp > 0:
+        # Loop through each type of the attacker
+        for atk_type in attacker.types:
+            attack_power = attacker.attack
+            defense_power = defender.defense
+            damage = max(1, int((attack_power - defense_power) / 2))
+
+            type_effectiveness = 1
+            # Consider each type of the defender
+            for defending_type in defender.types:
+                type_effectiveness *= type_advantages.get(atk_type, {}).get(
+                    defending_type, 1
+                )
+
+            # Apply cumulative type effectiveness
+            damage *= type_effectiveness
             defender.hp -= damage
-        elif attacker.special_attack > defender.special_defense:
-            damage = attacker.special_attack - defender.special_defense
-            defender.hp -= damage
+
+        # Players switch roles for the next round
         attacker, defender = (
             defender,
             attacker,
-        )  # Players switch roles for the next round
+        )
 
-    if pokemon1.hp <= 0:
-        return pokemon2.name
-    else:
-        return pokemon1.name
+    return pokemon1.name if pokemon2.hp <= 0 else pokemon2.name
 
 
 # Custom HTTPException handler for FastAPI
@@ -197,7 +206,7 @@ async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
         pokemon1, pokemon1_sprites = await get_pokemon(pokemon1_name)
         pokemon2, pokemon2_sprites = await get_pokemon(pokemon2_name)
 
-        winner = battle_simulator(pokemon1, pokemon2)
+        winner = battle_simulator(pokemon1, pokemon2, type_advantages)
 
         return templates.TemplateResponse(
             "battle.html",
