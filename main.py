@@ -124,13 +124,11 @@ async def get_pokemon(pokemon_name: str):
             )
 
 
-def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
+def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
 
     pokemon1.apply_stat_modifier()
     pokemon2.apply_stat_modifier()
 
-def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
-  
     if pokemon1.speed > pokemon2.speed:
         attacker = pokemon1
         defender = pokemon2
@@ -231,14 +229,22 @@ async def battle(
     pokemon2_level: int = Query(...),
 ):
     try:
-        pokemon1, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
-        pokemon2, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
+        (
+            pokemon1,
+            pokemon1_sprites,
+        ) = await get_pokemon(pokemon1_name)
+        (
+            pokemon2,
+            pokemon2_sprites,
+        ) = await get_pokemon(pokemon2_name)
 
         # passed on from index.html
         pokemon1.level = pokemon1_level
         pokemon2.level = pokemon2_level
 
-        logger.info(f"Initiating battle between {pokemon1_name} at level {pokemon1_level} and {pokemon2_name} at level {pokemon2_level}")
+        logger.info(
+            f"Initiating battle between {pokemon1_name} at level {pokemon1_level} and {pokemon2_name} at level {pokemon2_level}"
+        )
 
         winner = battle_simulator(pokemon1, pokemon2, type_advantages)
 
