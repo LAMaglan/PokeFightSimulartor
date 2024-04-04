@@ -39,8 +39,8 @@ class Pokemon(BaseModel):
 
     def stat_modifier(self, stat, IV):
         # TODO: final should be something like
-        # (2 x BaseStat + IV + (EV/4)) x Level / 100
-        return int(((2 * stat + IV) * self.level) / 100)
+        # Stat = ((2 x BaseStat + IV + (EV/4)) x Level / 100)
+        return int((2 * stat + IV) * self.level / 100)
 
     def apply_stat_modifier(
         self,
