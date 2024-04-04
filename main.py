@@ -27,15 +27,9 @@ class Pokemon(BaseModel):
     special_defense: int
     speed: int
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._iv = None
-
-    @property
-    def IV(self):
-        if self._iv is None:
-            self._iv = random.randint(0, 31)
-        return self._iv
+    # Removed IV as (class) attribute, as
+    # 1) there is one IV for each stat and also
+    # 2) it is random
 
     class Config:
         pass
@@ -50,8 +44,10 @@ class Pokemon(BaseModel):
         stats={"attack", "special_attack", "speed", "hp", "defense", "special_defense"},
     ):
         for stat in stats:
+            # IV for each stat. It is random so not stored as class attribute
+            IV = random.randint(0, 31)
             if hasattr(self, stat):
-                setattr(self, stat, self.stat_modifier(getattr(self, stat), self.IV))
+                setattr(self, stat, self.stat_modifier(getattr(self, stat), IV))
 
 
 # Initialize list with all pokemon names
