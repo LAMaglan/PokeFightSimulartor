@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -7,6 +7,7 @@ from logging_config import (
     get_logger,
 )  # Adjust the import statement according to your project structure
 from typing import List
+import random
 import csv
 
 # __name__ will set logger name as the file name: 'main'
@@ -20,6 +21,7 @@ templates = Jinja2Templates(directory="templates")
 # Define Pokemon class
 class Pokemon(BaseModel):
     name: str
+    level: int = 1
     hp: int
     attack: int
     defense: int
@@ -28,8 +30,27 @@ class Pokemon(BaseModel):
     speed: int
     types: List[str]
 
+    # Removed IV as (class) attribute, as
+    # 1) there is one IV for each stat and also
+    # 2) it is random
+
     class Config:
         pass
+
+    def stat_modifier(self, stat, IV):
+        # TODO: final should be something like
+        # (2 x BaseStat + IV + (EV/4)) x Level / 100
+        return int(((2 * stat + IV) * self.level) / 100)
+
+    def apply_stat_modifier(
+        self,
+        stats={"attack", "special_attack", "speed", "hp", "defense", "special_defense"},
+    ):
+        for stat in stats:
+            # IV for each stat. It is random so not stored as class attribute
+            IV = random.randint(0, 31)
+            if hasattr(self, stat):
+                setattr(self, stat, self.stat_modifier(getattr(self, stat), IV))
 
 
 # Initialize list with all pokemon names
@@ -103,11 +124,13 @@ async def get_pokemon(pokemon_name: str):
             )
 
 
-async def calculate_stats_total(stats: dict):
-    return sum(stats.values())
+def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon):
 
+    pokemon1.apply_stat_modifier()
+    pokemon2.apply_stat_modifier()
 
 def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
+  
     if pokemon1.speed > pokemon2.speed:
         attacker = pokemon1
         defender = pokemon2
@@ -200,11 +223,22 @@ async def read_pokemon(request: Request, pokemon_name: str):
 
 
 @app.get("/battle")
-async def battle(request: Request, pokemon1_name: str, pokemon2_name: str):
+async def battle(
+    request: Request,
+    pokemon1_name: str,
+    pokemon2_name: str,
+    pokemon1_level: int = Query(...),
+    pokemon2_level: int = Query(...),
+):
     try:
-        logger.info(f"Initiating battle between {pokemon1_name} and {pokemon2_name}.")
-        pokemon1, pokemon1_sprites = await get_pokemon(pokemon1_name)
-        pokemon2, pokemon2_sprites = await get_pokemon(pokemon2_name)
+        pokemon1, pokemon1_sprites, _ = await get_pokemon(pokemon1_name)
+        pokemon2, pokemon2_sprites, _ = await get_pokemon(pokemon2_name)
+
+        # passed on from index.html
+        pokemon1.level = pokemon1_level
+        pokemon2.level = pokemon2_level
+
+        logger.info(f"Initiating battle between {pokemon1_name} at level {pokemon1_level} and {pokemon2_name} at level {pokemon2_level}")
 
         winner = battle_simulator(pokemon1, pokemon2, type_advantages)
 
