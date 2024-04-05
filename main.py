@@ -139,8 +139,8 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
     while attacker.hp > 0 and defender.hp > 0:
         # Loop through each type of the attacker
         for atk_type in attacker.types:
-            attack_power = attacker.attack
-            defense_power = defender.defense
+            attack_power = (attacker.attack + attacker.special_attack) / 2
+            defense_power = (defender.defense + defender.special_defense) / 2
             damage = max(1, int((attack_power - defense_power) / 2))
 
             type_effectiveness = 1
