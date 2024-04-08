@@ -96,10 +96,15 @@ async def parse_types_csv():
         csv_reader = csv.reader(file)
         headers = next(csv_reader)
         for row in csv_reader:
+
+            # Lower case to match with pokeapi
             row_dict = {
-                header: float(value) for header, value in zip(headers[1:], row[1:])
+                header.lower(): float(value)
+                for header, value in zip(headers[1:], row[1:])
             }
-            type_advantages[row[0]] = row_dict
+            # Convert keys within the dictionary to lowercase
+            lowercase_key_row_dict = {k.lower(): v for k, v in row_dict.items()}
+            type_advantages[row[0].lower()] = lowercase_key_row_dict
 
 
 def clean_stat_names(stats: dict) -> dict:
