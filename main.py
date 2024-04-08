@@ -45,23 +45,19 @@ class Pokemon(BaseModel):
     class Config:
         pass
 
-    def update_stat(self, stat: Dict[str, int], effort: int, base_stat: str):
+    def update_stat(self, stat: Dict[str, int]):
         IV = random.randint(0, 31)
-        stat[base_stat] = int(
-            (2 * stat[base_stat] + IV + (effort / 4)) * (self.level / 100)
+        stat["base_stat"] = int(
+            (2 * stat["base_stat"] + IV + (stat["effort"] / 4)) * (self.level / 100)
         )
 
     def stats_modifier(self):
-        self.update_stat(self.hp, self.hp["effort"], "base_stat")
-        self.update_stat(self.attack, self.attack["effort"], "base_stat")
-        self.update_stat(self.defense, self.defense["effort"], "base_stat")
-        self.update_stat(
-            self.special_attack, self.special_attack["effort"], "base_stat"
-        )
-        self.update_stat(
-            self.special_defense, self.special_defense["effort"], "base_stat"
-        )
-        self.update_stat(self.speed, self.speed["effort"], "base_stat")
+        self.update_stat(self.hp)
+        self.update_stat(self.attack)
+        self.update_stat(self.defense)
+        self.update_stat(self.special_attack)
+        self.update_stat(self.special_defense)
+        self.update_stat(self.speed)
 
 
 # Initialize list with all pokemon names
@@ -148,8 +144,18 @@ async def get_pokemon(pokemon_name: str):
 
 def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
 
+    # TEST
+    print(pokemon1.hp)
+    print(pokemon2.hp)
+    print("--------------")
+
     pokemon1.stats_modifier()
     pokemon2.stats_modifier()
+
+    # TEST
+    print(pokemon1.hp)
+    print(pokemon2.hp)
+    print("--------------")
 
     while pokemon1.hp["base_stat"] > 0 and pokemon2.hp["base_stat"] > 0:
         attacker, defender = (
@@ -173,7 +179,13 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
                     defending_type, 1
                 )
 
+            # TEST
+            print(damage)
+            #
             damage *= type_effectiveness
+            # TEST
+            print(damage)
+            #
             defender.hp["base_stat"] -= damage
 
         pokemon1, pokemon2 = defender, attacker
