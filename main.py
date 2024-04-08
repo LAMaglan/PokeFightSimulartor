@@ -45,7 +45,7 @@ class Pokemon(BaseModel):
     class Config:
         pass
 
-    def update_stat(self, stat: Dict[str, int], base_modifier: int = 10):
+    def update_stat(self, stat: Dict[str, int], base_modifier: int = 5):
         IV = random.randint(0, 31)
         stat["base_stat"] = int(
             ((2 * stat["base_stat"] + IV + (stat["effort"] / 4)) * (self.level / 100))
