@@ -45,59 +45,23 @@ class Pokemon(BaseModel):
     class Config:
         pass
 
-    # TODO: final should be something like
-    # Stat = ((2 x BaseStat + IV + (EV/4)) x Level / 100)
+    def update_stat(self, stat: Dict[str, int], effort: int, base_stat: str):
+        IV = random.randint(0, 31)
+        stat[base_stat] = int(
+            (2 * stat[base_stat] + IV + (effort / 4)) * (self.level / 100)
+        )
 
-    # TODO: later figure out how to do in loop (previous implementation
-    # was unnecessarily complicated)
-
-    # NOTE: each `random.randint(0, 31)` represents IV.
-    # later figure out if make into function, or class attribute
     def stats_modifier(self):
-        self.hp["base_stat"] = int(
-            (2 * self.hp["base_stat"] + random.randint(0, 31) + (self.hp["effort"] / 4))
-            * (self.level / 100)
+        self.update_stat(self.hp, self.hp["effort"], "base_stat")
+        self.update_stat(self.attack, self.attack["effort"], "base_stat")
+        self.update_stat(self.defense, self.defense["effort"], "base_stat")
+        self.update_stat(
+            self.special_attack, self.special_attack["effort"], "base_stat"
         )
-        self.attack["base_stat"] = int(
-            (
-                2 * self.attack["base_stat"]
-                + random.randint(0, 31)
-                + (self.attack["effort"] / 4)
-            )
-            * (self.level / 100)
+        self.update_stat(
+            self.special_defense, self.special_defense["effort"], "base_stat"
         )
-        self.defense["base_stat"] = int(
-            (
-                2 * self.defense["base_stat"]
-                + random.randint(0, 31)
-                + (self.defense["effort"] / 4)
-            )
-            * (self.level / 100)
-        )
-        self.special_attack["base_stat"] = int(
-            (
-                2 * self.special_attack["base_stat"]
-                + random.randint(0, 31)
-                + (self.special_attack["effort"] / 4)
-            )
-            * (self.level / 100)
-        )
-        self.special_defense["base_stat"] = int(
-            (
-                2 * self.special_defense["base_stat"]
-                + random.randint(0, 31)
-                + (self.special_defense["effort"] / 4)
-            )
-            * (self.level / 100)
-        )
-        self.speed["base_stat"] = int(
-            (
-                2 * self.speed["base_stat"]
-                + random.randint(0, 31)
-                + (self.speed["effort"] / 4)
-            )
-            * (self.level / 100)
-        )
+        self.update_stat(self.speed, self.speed["effort"], "base_stat")
 
 
 # Initialize list with all pokemon names
