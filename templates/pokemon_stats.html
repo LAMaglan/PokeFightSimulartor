@@ -38,8 +38,12 @@
 
     <h3>Base stats:</h3>
     <ul>
-        {% for stat, value in pokemon_stats.items() %}
-        <li>{{ stat }}: {{ value }}</li>
+        {% for key, value in pokemon_stats.items() %}
+        {% if value is mapping %}
+        <p>{{ key }}: {{ value.get('base_stat') }}</p>
+        {% else %}
+        <p>{{ key }}: {{ value }}</p>
+        {% endif %}
         {% endfor %}
     </ul>
 
