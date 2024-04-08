@@ -45,14 +45,17 @@ class Pokemon(BaseModel):
     class Config:
         pass
 
-    def update_stat(self, stat: Dict[str, int]):
+    def update_stat(self, stat: Dict[str, int], base_modifier: int = 10):
         IV = random.randint(0, 31)
         stat["base_stat"] = int(
-            (2 * stat["base_stat"] + IV + (stat["effort"] / 4)) * (self.level / 100)
+            ((2 * stat["base_stat"] + IV + (stat["effort"] / 4)) * (self.level / 100))
+            + base_modifier
         )
 
     def stats_modifier(self):
-        self.update_stat(self.hp)
+
+        # Higher "constant" (base_modifier) only for HP
+        self.update_stat(self.hp, base_modifier=10)
         self.update_stat(self.attack)
         self.update_stat(self.defense)
         self.update_stat(self.special_attack)
@@ -115,6 +118,22 @@ def revert_stat_names(stats: dict) -> dict:
     return {key.replace("_", "-"): value for key, value in stats.items()}
 
 
+def calculate_damage(level, attack_power, defense_power):
+    """
+    Calculate damage based on the Pokémon's level, attack power, and defense power.
+    This is a simplified example and may need to be customized for your specific needs.
+    """
+    # Placeholder for any modifiers to damage (e.g., critical hits, randomization)
+    modifier = 1
+
+    # Basic damage calculation - this is a simplified formula and may be adjusted
+    damage = (
+        ((2 * level) / 5 + 2) * attack_power * (attack_power / defense_power) / 50 + 2
+    ) * modifier
+
+    return damage
+
+
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
     async with httpx.AsyncClient() as client:
@@ -144,18 +163,8 @@ async def get_pokemon(pokemon_name: str):
 
 def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
 
-    # TEST
-    print(pokemon1.hp)
-    print(pokemon2.hp)
-    print("--------------")
-
     pokemon1.stats_modifier()
     pokemon2.stats_modifier()
-
-    # TEST
-    print(pokemon1.hp)
-    print(pokemon2.hp)
-    print("--------------")
 
     while pokemon1.hp["base_stat"] > 0 and pokemon2.hp["base_stat"] > 0:
         attacker, defender = (
@@ -165,13 +174,16 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
         )
 
         for atk_type in attacker.types:
+
+            # For now, take average of "physical" and "special" stats
             attack_power = (
                 attacker.attack["base_stat"] + attacker.special_attack["base_stat"]
             ) / 2
             defense_power = (
                 defender.defense["base_stat"] + defender.special_defense["base_stat"]
             ) / 2
-            damage = max(1, int((attack_power - defense_power) / 2))
+
+            damage = calculate_damage(attacker.level, attack_power, defense_power)
 
             type_effectiveness = 1
             for defending_type in defender.types:
@@ -179,18 +191,13 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
                     defending_type, 1
                 )
 
-            # TEST
-            print(damage)
-            #
+            # Apply type effectiveness to the damage
             damage *= type_effectiveness
-            # TEST
-            print(damage)
-            #
             defender.hp["base_stat"] -= damage
 
-        pokemon1, pokemon2 = defender, attacker
+            pokemon1, pokemon2 = defender, attacker
 
-    return attacker.name if pokemon2.hp["base_stat"] <= 0 else defender.name
+    return defender.name if pokemon2.hp["base_stat"] <= 0 else attacker.name
 
 
 # Custom HTTPException handler for FastAPI
