@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
 from logging_config import (
@@ -16,6 +17,10 @@ logger = get_logger(__name__)
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
+
+
+# Configure static files directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Define Pokemon class
@@ -225,10 +230,18 @@ async def get_pokemon_names():
     return pokemon_names_list
 
 
-# endpoint that shows type advantages as nested dict
-@app.get("/type-advantages")
-async def get_type_advantages():
-    return type_advantages
+# endpoint that links to HTML displaying type advantages
+@app.get("/types")
+async def display_type_advantages(request: Request):
+    defending_types = list(type_advantages[next(iter(type_advantages))].keys())
+    return templates.TemplateResponse(
+        "types.html",
+        {
+            "request": request,
+            "type_advantages": type_advantages,
+            "defending_types": defending_types,
+        },
+    )
 
 
 @app.get("/pokemon/{pokemon_name}")
