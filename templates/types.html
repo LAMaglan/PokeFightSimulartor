@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Type Advantages</title>
+    <link rel="stylesheet" href="/static/css/types_style.css">
+</head>
+
+<body>
+    <h1>Type Advantages</h1>
+    <table>
+        <tr>
+            <th></th>
+            {% for defending_type in defending_types %}
+            <th class="type-{{ defending_type }}">{{ defending_type|capitalize }}</th>
+            {% endfor %}
+        </tr>
+        {% for attacking_type, type_effectiveness in type_advantages.items() %}
+        <tr>
+            <td class="type-{{ attacking_type }}"><strong>{{ attacking_type|capitalize }}</strong></td>
+            {% for effectiveness in type_effectiveness.values() %}
+            <td class="{% if effectiveness == 0 %}type-inactive{% elif effectiveness == 2 %}type-effective{%
+                elif effectiveness == 0.5 %}type-ineffective{% endif %}">
+                {{ effectiveness }}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>
