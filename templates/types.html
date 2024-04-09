@@ -3,46 +3,9 @@
 
 <head>
     <title>Type Advantages</title>
-    <script>
-        function sortTable(n) {
-            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            table = document.getElementById("type-table");
-            switching = true;
-            dir = "asc";
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    if (dir == "asc") {
-                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else if (dir == "desc") {
-                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    }
-                }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchcount++;
-                } else {
-                    if (switchcount == 0 && dir == "asc") {
-                        dir = "desc";
-                        switching = true;
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         table {
+            border: 2px solid #000;
             border-collapse: collapse;
             width: 100%;
         }
@@ -51,32 +14,35 @@
         td {
             text-align: left;
             padding: 8px;
+            border: 1px solid #000;
         }
 
         th {
             cursor: pointer;
+        }
+
+        td:first-child {
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
     <h1>Type Advantages</h1>
-    <table id="type-table">
+    <table>
         <tr>
-            <th onclick="sortTable(0)">Attack Type</th>
+            <th></th>
             {% for defending_type in defending_types %}
-            <th onclick="sortTable({{ loop.index }})">{{ defending_type }}</th>
+            <th onclick="sortTable({{ loop.index }})">{{ defending_type|capitalize }}</th>
             {% endfor %}
         </tr>
         {% for attacking_type, type_effectiveness in type_advantages.items() %}
         <tr>
-            <td>{{ attacking_type }}</td>
+            <td><strong>{{ attacking_type|capitalize }}</strong></td>
             {% for effectiveness in type_effectiveness.values() %}
             <td>{{ effectiveness }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
     </table>
-</body>
-
-</html>
+    </body< /html>
