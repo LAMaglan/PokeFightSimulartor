@@ -186,10 +186,19 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
             damage = calculate_damage(attacker.level, attack_power, defense_power)
 
             type_effectiveness = 1
+
             for defending_type in defender.types:
-                type_effectiveness *= type_advantages.get(atk_type, {}).get(
-                    defending_type, 1
-                )
+
+                effectiveness = 1
+                for attack_type in attacker.types:
+
+                    # attacker effectiveness of each type across defender types
+                    effectiveness *= type_advantages.get(attack_type, {}).get(
+                        defending_type, 1
+                    )
+
+                # Collect cumulative type effectiveness of attacker
+                type_effectiveness *= effectiveness
 
             # Apply type effectiveness to the damage
             damage *= type_effectiveness
