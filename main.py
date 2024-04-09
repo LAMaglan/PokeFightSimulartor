@@ -38,10 +38,6 @@ class Pokemon(BaseModel):
     # will have stored after apply_stat_modifier
     # e.g. hp_actual, defense_actual, etc.
 
-    # Removed IV as (class) attribute, as
-    # 1) there is one IV for each stat and also
-    # 2) it is random
-
     class Config:
         pass
 
@@ -126,7 +122,7 @@ def calculate_damage(level, attack_power, defense_power):
     # Placeholder for any modifiers to damage (e.g., critical hits, randomization)
     modifier = 1
 
-    # Basic damage calculation - this is a simplified formula and may be adjusted
+    # Basic damage calculation
     damage = (
         ((2 * level) / 5 + 2) * attack_power * (attack_power / defense_power) / 50 + 2
     ) * modifier
