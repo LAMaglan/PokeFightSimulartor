@@ -91,3 +91,7 @@ See swagger docs in `/docs`, e.g.
 `battle.html`
 <br>
 ![battle_example](https://github.com/LAMaglan/PokeFightSimulator/assets/29206211/5c7d37b3-55f1-4a68-9d8a-0d6e80575074)
+
+`types.html`
+<br>
+![types_example](https://github.com/LAMaglan/PokeFightSimulator/assets/29206211/f0e6a296-fe40-40e6-913e-c433d9b78002)
