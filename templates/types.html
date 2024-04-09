@@ -24,6 +24,21 @@
         td:first-child {
             font-weight: bold;
         }
+
+        .type-inactive {
+            background-color: black;
+            color: white;
+        }
+
+        .type-effective {
+            background-color: green;
+            color: white;
+        }
+
+        .type-ineffective {
+            background-color: red;
+            color: white;
+        }
     </style>
 </head>
 
@@ -40,9 +55,14 @@
         <tr>
             <td><strong>{{ attacking_type|capitalize }}</strong></td>
             {% for effectiveness in type_effectiveness.values() %}
-            <td>{{ effectiveness }}</td>
+            <td
+                class="{% if effectiveness == 0 %}type-inactive{% elif effectiveness == 2 %}type-effective{% elif effectiveness == 0.5 %}type-ineffective{% endif %}">
+                {{ effectiveness }}
+            </td>
             {% endfor %}
         </tr>
         {% endfor %}
     </table>
-    </body< /html>
+</body>
+
+</html>
