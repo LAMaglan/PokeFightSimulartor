@@ -169,7 +169,8 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
             else (pokemon2, pokemon1)
         )
 
-        for atk_type in attacker.types:
+        # loop over types of the attacker, but collective used
+        for _ in attacker.types:
 
             # For now, take average of "physical" and "special" stats
             attack_power = (
