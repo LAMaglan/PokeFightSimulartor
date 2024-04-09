@@ -225,10 +225,18 @@ async def get_pokemon_names():
     return pokemon_names_list
 
 
-# endpoint that shows type advantages as nested dict
-@app.get("/type-advantages")
-async def get_type_advantages():
-    return type_advantages
+# endpoint that links to HTML displaying type advantages
+@app.get("/types")
+async def display_type_advantages(request: Request):
+    defending_types = list(type_advantages[next(iter(type_advantages))].keys())
+    return templates.TemplateResponse(
+        "types.html",
+        {
+            "request": request,
+            "type_advantages": type_advantages,
+            "defending_types": defending_types,
+        },
+    )
 
 
 @app.get("/pokemon/{pokemon_name}")
