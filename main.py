@@ -38,10 +38,6 @@ class Pokemon(BaseModel):
     # will have stored after apply_stat_modifier
     # e.g. hp_actual, defense_actual, etc.
 
-    # Removed IV as (class) attribute, as
-    # 1) there is one IV for each stat and also
-    # 2) it is random
-
     class Config:
         pass
 
@@ -126,7 +122,7 @@ def calculate_damage(level, attack_power, defense_power):
     # Placeholder for any modifiers to damage (e.g., critical hits, randomization)
     modifier = 1
 
-    # Basic damage calculation - this is a simplified formula and may be adjusted
+    # Basic damage calculation
     damage = (
         ((2 * level) / 5 + 2) * attack_power * (attack_power / defense_power) / 50 + 2
     ) * modifier
@@ -173,7 +169,8 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
             else (pokemon2, pokemon1)
         )
 
-        for atk_type in attacker.types:
+        # loop over types of the attacker, but collective used
+        for _ in attacker.types:
 
             # For now, take average of "physical" and "special" stats
             attack_power = (
@@ -186,10 +183,19 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
             damage = calculate_damage(attacker.level, attack_power, defense_power)
 
             type_effectiveness = 1
+
             for defending_type in defender.types:
-                type_effectiveness *= type_advantages.get(atk_type, {}).get(
-                    defending_type, 1
-                )
+
+                effectiveness = 1
+                for attack_type in attacker.types:
+
+                    # attacker effectiveness of each type across defender types
+                    effectiveness *= type_advantages.get(attack_type, {}).get(
+                        defending_type, 1
+                    )
+
+                # Collect cumulative type effectiveness of attacker
+                type_effectiveness *= effectiveness
 
             # Apply type effectiveness to the damage
             damage *= type_effectiveness
