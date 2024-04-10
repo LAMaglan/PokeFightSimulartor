@@ -108,19 +108,24 @@ async def on_startup_types():
 
 async def parse_types_csv():
     global type_advantages
-    with open("data/types.csv", "r") as file:
-        csv_reader = csv.reader(file)
-        headers = next(csv_reader)
-        for row in csv_reader:
+    filepath = "data/types.csv"
+    try:
+        with open(filepath, "r") as file:
+            csv_reader = csv.reader(file)
+            headers = next(csv_reader)
+            for row in csv_reader:
 
-            # Lower case to match with pokeapi
-            row_dict = {
-                header.lower(): float(value)
-                for header, value in zip(headers[1:], row[1:])
-            }
-            # Convert keys within the dictionary to lowercase
-            lowercase_key_row_dict = {k.lower(): v for k, v in row_dict.items()}
-            type_advantages[row[0].lower()] = lowercase_key_row_dict
+                # Lower case to match with pokeapi
+                row_dict = {
+                    header.lower(): float(value)
+                    for header, value in zip(headers[1:], row[1:])
+                }
+                # Convert keys within the dictionary to lowercase
+                lowercase_key_row_dict = {k.lower(): v for k, v in row_dict.items()}
+                type_advantages[row[0].lower()] = lowercase_key_row_dict
+    except FileNotFoundError as exc:
+        logger.error(f"Error reading data in {filepath}: {str(exc)}")
+        raise
 
 
 def clean_stat_names(stats: dict) -> dict:
