@@ -228,9 +228,6 @@ async def get_pokemon(pokemon_name: str):
 
             stats = clean_stat_names(stats)
             types = [t["type"]["name"] for t in pokemon_data["types"]]
-            # TODO: now with the stat_updated attributes, get error here:
-            # "hp_updated Field required [type=missing, input_value={'name': 'ivysaur', 'hp':...s': ['grass', 'poison']}, input_type=dict]"
-
             pokemon = Pokemon(name=pokemon_name, **stats, types=types)
             sprites = pokemon_data["sprites"]
 
