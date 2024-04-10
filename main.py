@@ -42,9 +42,25 @@ class Pokemon(BaseModel):
     # TODO: consider having new attributes, that
     # will have stored after apply_stat_modifier
     # e.g. hp_actual, defense_actual, etc.
+    # for now, "example" below makes clear
 
-    class Config:
-        pass
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "FakeMon",
+                    "level": 5,
+                    "hp": {"base_stat": 10, "effort": 0},
+                    "attack": {"base_stat": 30, "effort": 0},
+                    "defense": {"base_stat": 35, "effort": 1},
+                    "special_attack": {"base_stat": 25, "effort": 2},
+                    "special_defense": {"base_stat": 10, "effort": 0},
+                    "speed": {"base_stat": 10, "effort": 1},
+                    "types": ["electric", "water"],
+                }
+            ]
+        }
+    }
 
     def update_stat(self, stat: Dict[str, int], base_modifier: int = 5):
         IV = random.randint(0, 31)
