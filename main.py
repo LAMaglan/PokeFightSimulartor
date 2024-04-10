@@ -229,6 +229,7 @@ async def get_pokemon(pokemon_name: str):
             stats = clean_stat_names(stats)
             types = [t["type"]["name"] for t in pokemon_data["types"]]
             pokemon = Pokemon(name=pokemon_name, **stats, types=types)
+            pokemon.stats_modifier()
             sprites = pokemon_data["sprites"]
 
             return pokemon, sprites
@@ -239,9 +240,6 @@ async def get_pokemon(pokemon_name: str):
 
 
 def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
-
-    pokemon1.stats_modifier()
-    pokemon2.stats_modifier()
 
     while pokemon1.hp_updated > 0 and pokemon2.hp_updated > 0:
         attacker, defender = (
