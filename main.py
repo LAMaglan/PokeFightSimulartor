@@ -192,6 +192,25 @@ def calculate_damage(level, attack_power, defense_power):
     return damage
 
 
+def extract_pokemon_base_stats(pokemon: Pokemon) -> dict:
+    pokemon_stats = vars(pokemon)
+    del pokemon_stats["name"]
+    del pokemon_stats["types"]
+    del pokemon_stats["level"]
+
+    # Collect the {stat}_updated attributes to delete
+    attrs_to_delete = [
+        stat for stat in pokemon_stats.keys() if stat.endswith("_updated")
+    ]
+
+    # Delete the {stat}_updated attributes
+    for attr in attrs_to_delete:
+        del pokemon_stats[attr]
+
+    pokemon_stats = revert_stat_names(pokemon_stats)
+    return pokemon_stats
+
+
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
     async with httpx.AsyncClient() as client:
@@ -310,23 +329,8 @@ async def read_pokemon(request: Request, pokemon_name: str):
         logger.info(f"Fetching data for {pokemon_name}.")
 
         pokemon, pokemon_sprites = await get_pokemon(pokemon_name)
-
-        pokemon_stats = vars(pokemon)
-        del pokemon_stats["name"]
         pokemon_types = pokemon.types
-        del pokemon_stats["types"]
-        del pokemon_stats["level"]
-
-        # Collect the {stat}_updated attributes to delete
-        attrs_to_delete = [
-            stat for stat in pokemon_stats.keys() if stat.endswith("_updated")
-        ]
-
-        # Delete the {stat}_updated attributes
-        for attr in attrs_to_delete:
-            del pokemon_stats[attr]
-
-        pokemon_stats = revert_stat_names(pokemon_stats)
+        pokemon_stats = extract_pokemon_base_stats(pokemon)
 
         response = templates.TemplateResponse(
             "pokemon_stats.html",
