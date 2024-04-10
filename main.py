@@ -94,11 +94,37 @@ POKEMON_LIMIT = 2000
 async def on_startup_names():
     global pokemon_names_list
     url = f"https://pokeapi.co/api/v2/pokemon?limit={POKEMON_LIMIT}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        data = response.json()
-        pokemon_names_list = [result["name"] for result in data["results"]]
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            # Check if both 'results' and 'name' keys exist in the response,
+            # required to generate `pokemon_names_list`
+            if "results" not in data and "name" not in data.get("results", [{}])[0]:
+                raise KeyError(
+                    "Both 'results' and 'name' keys not found in data fetched from pokeapi."
+                )
+            elif "results" not in data:
+                raise KeyError(
+                    "'results' key not found in response data fetched from pokeapi."
+                )
+            elif "name" not in data.get("results", [{}])[0]:
+                raise KeyError(
+                    "'name' key not found in response data fetched from pokeapi."
+                )
+
+            pokemon_names_list = [result["name"] for result in data["results"]]
+
+    except httpx.RequestError as exc:
+        # Request failed or connection error
+        logger.error(
+            f"Request failed or connection error required for getting pokemon names: {str(exc)}"
+        )
+
+    except httpx.HTTPError as exc:
+        logger.error(f"Invalid url, response or failed JSON serialization: {str(exc)}")
 
 
 @app.on_event("startup")
