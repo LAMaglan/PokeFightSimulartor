@@ -28,9 +28,9 @@ class Pokemon(BaseModel):
     name: str
     level: int = 1
 
+    # Stats directly taken from pokeAPI
     # TODO: later find out if can use type annotation
     # to get attribute with dict{base_stat: int, effort: int}
-
     hp: Dict[str, int]
     attack: Dict[str, int]
     defense: Dict[str, int]
@@ -39,10 +39,13 @@ class Pokemon(BaseModel):
     speed: Dict[str, int]
     types: List[str]
 
-    # TODO: consider having new attributes, that
-    # will have stored after apply_stat_modifier
-    # e.g. hp_actual, defense_actual, etc.
-    # for now, "example" below makes clear
+    # updated stats based on custom formula
+    hp_updated: float = 0
+    attack_updated: float = 0
+    defense_updated: float = 0
+    special_attack_updated: float = 0
+    special_defense_updated: float = 0
+    speed_updated: float = 0
 
     model_config = {
         "json_schema_extra": {
@@ -57,27 +60,34 @@ class Pokemon(BaseModel):
                     "special_defense": {"base_stat": 10, "effort": 0},
                     "speed": {"base_stat": 10, "effort": 1},
                     "types": ["electric", "water"],
+                    "hp_updated": 10,
+                    "attack_updated": 15,
+                    "defense_updated": 40,
+                    "special_attack_updated": 30,
+                    "special_defense_updated": 25,
+                    "speed_updated": 20,
                 }
             ]
         }
     }
 
-    def update_stat(self, stat: Dict[str, int], base_modifier: int = 5):
+    def update_stat(self, stat: Dict[str, int], base_modifier: int = 5) -> int:
         IV = random.randint(0, 31)
-        stat["base_stat"] = int(
-            ((2 * stat["base_stat"] + IV + (stat["effort"] / 4)) * (self.level / 100))
-            + base_modifier
+        base_stat = stat["base_stat"]
+        effort = stat["effort"]
+        updated_base_stat = int(
+            ((2 * base_stat + IV + (effort / 4)) * (self.level / 100)) + base_modifier
         )
+        return updated_base_stat
 
     def stats_modifier(self):
-
         # Higher "constant" (base_modifier) only for HP
-        self.update_stat(self.hp, base_modifier=10)
-        self.update_stat(self.attack)
-        self.update_stat(self.defense)
-        self.update_stat(self.special_attack)
-        self.update_stat(self.special_defense)
-        self.update_stat(self.speed)
+        self.hp_updated = self.update_stat(self.hp, base_modifier=10)
+        self.attack_updated = self.update_stat(self.attack)
+        self.defense_updated = self.update_stat(self.defense)
+        self.special_attack_updated = self.update_stat(self.special_attack)
+        self.special_defense_updated = self.update_stat(self.special_defense)
+        self.speed_updated = self.update_stat(self.speed)
 
 
 # Initialize list with all pokemon names
@@ -199,6 +209,9 @@ async def get_pokemon(pokemon_name: str):
 
             stats = clean_stat_names(stats)
             types = [t["type"]["name"] for t in pokemon_data["types"]]
+            # TODO: now with the stat_updated attributes, get error here:
+            # "hp_updated Field required [type=missing, input_value={'name': 'ivysaur', 'hp':...s': ['grass', 'poison']}, input_type=dict]"
+
             pokemon = Pokemon(name=pokemon_name, **stats, types=types)
             sprites = pokemon_data["sprites"]
 
@@ -214,10 +227,10 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
     pokemon1.stats_modifier()
     pokemon2.stats_modifier()
 
-    while pokemon1.hp["base_stat"] > 0 and pokemon2.hp["base_stat"] > 0:
+    while pokemon1.hp_updated > 0 and pokemon2.hp_updated > 0:
         attacker, defender = (
             (pokemon1, pokemon2)
-            if pokemon1.speed["base_stat"] > pokemon2.speed["base_stat"]
+            if pokemon1.speed_updated > pokemon2.speed_updated
             else (pokemon2, pokemon1)
         )
 
@@ -226,10 +239,10 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
 
             # For now, take average of "physical" and "special" stats
             attack_power = (
-                attacker.attack["base_stat"] + attacker.special_attack["base_stat"]
+                attacker.attack_updated + attacker.special_attack_updated
             ) / 2
             defense_power = (
-                defender.defense["base_stat"] + defender.special_defense["base_stat"]
+                defender.defense_updated + defender.special_defense_updated
             ) / 2
 
             damage = calculate_damage(attacker.level, attack_power, defense_power)
@@ -251,11 +264,11 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
 
             # Apply type effectiveness to the damage
             damage *= type_effectiveness
-            defender.hp["base_stat"] -= damage
+            defender.hp_updated -= damage
 
             pokemon1, pokemon2 = defender, attacker
 
-    return defender.name if pokemon2.hp["base_stat"] <= 0 else attacker.name
+    return defender.name if pokemon2.hp_updated <= 0 else attacker.name
 
 
 # Custom HTTPException handler for FastAPI
@@ -303,6 +316,16 @@ async def read_pokemon(request: Request, pokemon_name: str):
         pokemon_types = pokemon.types
         del pokemon_stats["types"]
         del pokemon_stats["level"]
+
+        # Collect the {stat}_updated attributes to delete
+        attrs_to_delete = [
+            stat for stat in pokemon_stats.keys() if stat.endswith("_updated")
+        ]
+
+        # Delete the {stat}_updated attributes
+        for attr in attrs_to_delete:
+            del pokemon_stats[attr]
+
         pokemon_stats = revert_stat_names(pokemon_stats)
 
         response = templates.TemplateResponse(
