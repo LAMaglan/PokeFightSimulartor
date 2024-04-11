@@ -1,53 +1,45 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Pokemon Stats</title>
-</head>
+{% block content %}
+<h1>Pokemon Stats</h1>
 
-<body>
-    <h1>Pokemon Stats</h1>
+<h2>Pokemon: {{ pokemon.name }}</h2>
 
-    <h2>Pokemon: {{ pokemon.name }}</h2>
+<div id="sprites">
+    {% if pokemon.sprites.front_default %}
+    <img src="{{ pokemon.sprites.front_default }}" alt="Front default">
+    {% endif %}
+    {% if pokemon.sprites.front_shiny %}
+    <img src="{{ pokemon.sprites.front_shiny }}" alt="Front shiny">
+    {% endif %}
+    <!-- Add more as needed -->
+</div>
 
-    <div id="sprites">
-        {% if pokemon.sprites.front_default %}
-        <img src="{{ pokemon.sprites.front_default }}" alt="Front default">
-        {% endif %}
-        {% if pokemon.sprites.front_shiny %}
-        <img src="{{ pokemon.sprites.front_shiny }}" alt="Front shiny">
-        {% endif %}
-        <!-- Add more as needed -->
+<h3>Type:</h3>
+<div class="type-icons" style="display: flex;">
+    {% for type in pokemon.types %}
+    <div class="type-icon">
+        <!-- Display type name -->
+        <p>{{ type | capitalize }}</p>
+        <!-- Display type icon -->
+        <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/types/gen8/{{ type }}.png"
+            alt="{{ type | capitalize }} icon">
+        <!-- Or use the other URL if preferred -->
+        <!-- <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/type-logos/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon"> -->
     </div>
+    {% endfor %}
+</div>
 
-    <h3>Type:</h3>
-    <div class="type-icons" style="display: flex;">
-        {% for type in pokemon.types %}
-        <div class="type-icon">
-            <!-- Display type name -->
-            <p>{{ type | capitalize }}</p>
-            <!-- Display type icon -->
-            <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/types/gen8/{{ type }}.png"
-                alt="{{ type | capitalize }} icon">
-            <!-- Or use the other URL if preferred -->
-            <!-- <img src="https://raw.githubusercontent.com/msikma/pokesprite/master/misc/type-logos/gen8/{{ type }}.png" alt="{{ type | capitalize }} icon"> -->
-        </div>
-        {% endfor %}
-    </div>
+<h3>Base stats:</h3>
+<ul>
+    {% for key, value in pokemon_stats.items() %}
+    {% if value is mapping %}
+    <p>{{ key }}: {{ value.get('base_stat') }}</p>
+    {% else %}
+    <p>{{ key }}: {{ value }}</p>
+    {% endif %}
+    {% endfor %}
+</ul>
 
-    <h3>Base stats:</h3>
-    <ul>
-        {% for key, value in pokemon_stats.items() %}
-        {% if value is mapping %}
-        <p>{{ key }}: {{ value.get('base_stat') }}</p>
-        {% else %}
-        <p>{{ key }}: {{ value }}</p>
-        {% endif %}
-        {% endfor %}
-    </ul>
-
-    <a href="/">Search again</a>
-</body>
-
-</html>
+<a href="/">Search again</a>
+{% endblock %}
