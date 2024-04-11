@@ -181,11 +181,41 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
     pokemon1.stats_modifier()
     pokemon2.stats_modifier()
 
-    while pokemon1.hp_updated > 0 and pokemon2.hp_updated > 0:
-        attacker, defender = (
-            (pokemon1, pokemon2)
-            if pokemon1.speed_updated > pokemon2.speed_updated
-            else (pokemon2, pokemon1)
+    logger.info(
+        f"Battle simulator --- pokemon1: {pokemon1.name} has speed {pokemon1.speed_updated}"
+    )
+    logger.info(
+        f"Battle simulator --- pokemon2: {pokemon2.name} has speed {pokemon2.speed_updated}"
+    )
+
+    attacker, defender = (
+        (pokemon1, pokemon2)
+        if pokemon1.speed_updated > pokemon2.speed_updated
+        else (pokemon2, pokemon1)
+    )
+
+    # for sanity check
+    turn = 0
+    prev_attacker_name = attacker.name
+
+    # while pokemon1.hp_updated > 0 and pokemon2.hp_updated > 0:
+    while attacker.hp_updated > 0 and defender.hp_updated > 0:
+
+        # sanity check
+        turn += 1
+        current_attacker_name = attacker.name
+
+        if (
+            prev_attacker_name is current_attacker_name == prev_attacker_name
+            and turn != 1
+        ):
+            raise ValueError(
+                f"Attacker {current_attacker_name} is the same in consecutive rounds!"
+            )
+
+        prev_attacker_name = current_attacker_name
+        logger.info(
+            f"Battle simulator --- This is round {turn}. The attacker is {attacker.name} and the defender is {defender.name}. The defender has HP {defender.hp_updated}"
         )
 
         # loop over types of the attacker, but collective used
@@ -220,6 +250,6 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
             damage *= type_effectiveness
             defender.hp_updated -= damage
 
-            pokemon1, pokemon2 = defender, attacker
+        attacker, defender = defender, attacker
 
-    return defender.name if pokemon2.hp_updated <= 0 else attacker.name
+    return defender.name if attacker.hp_updated <= 0 else attacker.name
