@@ -188,11 +188,19 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
         f"Battle simulator --- pokemon2: {pokemon2.name} has speed {pokemon2.speed_updated}"
     )
 
-    attacker, defender = (
-        (pokemon1, pokemon2)
-        if pokemon1.speed_updated > pokemon2.speed_updated
-        else (pokemon2, pokemon1)
-    )
+    # Determine attacker
+    # Randomly choose if both pokemon have same speed
+    if pokemon1.speed_updated == pokemon2.speed_updated:
+
+        attacker = random.choice([pokemon1, pokemon2])
+        defender = pokemon2 if attacker == pokemon1 else pokemon1
+    else:
+        # Pick pokemon with higher speed
+        attacker, defender = (
+            (pokemon1, pokemon2)
+            if pokemon1.speed_updated > pokemon2.speed_updated
+            else (pokemon2, pokemon1)
+        )
 
     # for sanity check
     turn = 0
