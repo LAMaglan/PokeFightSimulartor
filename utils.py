@@ -194,11 +194,28 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
         else (pokemon2, pokemon1)
     )
 
+    # for sanity check
+    turn = 0
+    prev_attacker_name = attacker.name
+
     # while pokemon1.hp_updated > 0 and pokemon2.hp_updated > 0:
     while attacker.hp_updated > 0 and defender.hp_updated > 0:
 
+        # sanity check
+        turn += 1
+        current_attacker_name = attacker.name
+
+        if (
+            prev_attacker_name is current_attacker_name == prev_attacker_name
+            and turn != 1
+        ):
+            raise ValueError(
+                f"Attacker {current_attacker_name} is the same in consecutive rounds!"
+            )
+
+        prev_attacker_name = current_attacker_name
         logger.info(
-            f"Battle simulator --- The attacker is {attacker.name} and the defender is {defender.name}. The defender has HP {defender.hp_updated}"
+            f"Battle simulator --- This is round {turn}. The attacker is {attacker.name} and the defender is {defender.name}. The defender has HP {defender.hp_updated}"
         )
 
         # loop over types of the attacker, but collective used
