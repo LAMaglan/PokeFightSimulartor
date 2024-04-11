@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
 <head>
     <meta charset="UTF-8">
@@ -11,76 +10,74 @@
     </style>
 </head>
 
-<body>
-    <h1>Pokemon Battle</h1>
+{% block content %}
+<h1>Pokemon Battle</h1>
 
-    <button id="statsButton" onclick="window.location.href='/types'">Type Advantages</button>
+<button id="statsButton" onclick="window.location.href='/types'">Type Advantages</button>
 
 
 
-    <form id="battleForm" action="/battle" method="get">
-        <label for="pokemon1_name">Pokemon 1:</label><br>
-        <input list="pokemon_list1" type="text" id="pokemon1_name" name="pokemon1_name" autocomplete="off">
-        <datalist id="pokemon_list1"></datalist>
-        <button type="button" onclick="redirectToStats('pokemon1_name')">View Stats</button><br>
+<form id="battleForm" action="/battle" method="get">
+    <label for="pokemon1_name">Pokemon 1:</label><br>
+    <input list="pokemon_list1" type="text" id="pokemon1_name" name="pokemon1_name" autocomplete="off">
+    <datalist id="pokemon_list1"></datalist>
+    <button type="button" onclick="redirectToStats('pokemon1_name')">View Stats</button><br>
 
-        <!-- Added level field for Pokemon 1 -->
-        <label for="pokemon1_level">Level:</label><br>
-        <input type="number" id="pokemon1_level" name="pokemon1_level" min="1" max="100" value="5"><br><br>
+    <!-- Added level field for Pokemon 1 -->
+    <label for="pokemon1_level">Level:</label><br>
+    <input type="number" id="pokemon1_level" name="pokemon1_level" min="1" max="100" value="5"><br><br>
 
-        <label for="pokemon2_name">Pokemon 2:</label><br>
-        <input list="pokemon_list2" type="text" id="pokemon2_name" name="pokemon2_name" autocomplete="off">
-        <datalist id="pokemon_list2"></datalist>
-        <button type="button" onclick="redirectToStats('pokemon2_name')">View Stats</button><br>
+    <label for="pokemon2_name">Pokemon 2:</label><br>
+    <input list="pokemon_list2" type="text" id="pokemon2_name" name="pokemon2_name" autocomplete="off">
+    <datalist id="pokemon_list2"></datalist>
+    <button type="button" onclick="redirectToStats('pokemon2_name')">View Stats</button><br>
 
-        <!-- Added level field for Pokemon 2 -->
-        <label for="pokemon2_level">Level:</label><br>
-        <input type="number" id="pokemon2_level" name="pokemon2_level" min="1" max="100" value="5"><br><br>
+    <!-- Added level field for Pokemon 2 -->
+    <label for="pokemon2_level">Level:</label><br>
+    <input type="number" id="pokemon2_level" name="pokemon2_level" min="1" max="100" value="5"><br><br>
 
-        <input type="submit" value="Battle!">
-    </form>
+    <input type="submit" value="Battle!">
+</form>
 
-    <script>
-        function redirectToStats(inputId) {
-            var pokemonName = document.getElementById(inputId).value;
-            if (pokemonName) {
-                window.location.href = '/pokemon/' + pokemonName;
-            } else {
-                alert('Please enter a Pokemon name.');
+<script>
+    function redirectToStats(inputId) {
+        var pokemonName = document.getElementById(inputId).value;
+        if (pokemonName) {
+            window.location.href = '/pokemon/' + pokemonName;
+        } else {
+            alert('Please enter a Pokemon name.');
+        }
+    }
+
+    // Function that populates a datalist with options that start with the input's value
+    function filterDatalist(inputElement, datalistElement, fullPokemonList) {
+        const searchTerm = inputElement.value.toLowerCase(); // Get the current input value
+        // Clear out the current options
+        datalistElement.innerHTML = "";
+        // Filter the full Pokemon list and add matching items as options
+        fullPokemonList.forEach(pokemon => {
+            if (pokemon.toLowerCase().startsWith(searchTerm)) {
+                const option = document.createElement('option');
+                option.value = pokemon;
+                datalistElement.appendChild(option);
             }
-        }
+        });
+    }
 
-        // Function that populates a datalist with options that start with the input's value
-        function filterDatalist(inputElement, datalistElement, fullPokemonList) {
-            const searchTerm = inputElement.value.toLowerCase(); // Get the current input value
-            // Clear out the current options
-            datalistElement.innerHTML = "";
-            // Filter the full Pokemon list and add matching items as options
-            fullPokemonList.forEach(pokemon => {
-                if (pokemon.toLowerCase().startsWith(searchTerm)) {
-                    const option = document.createElement('option');
-                    option.value = pokemon;
-                    datalistElement.appendChild(option);
-                }
-            });
-        }
-
-        // Fetch the pokemon names and store them
-        let fullPokemonList = [];
-        fetch('/pokemon_names')
-            .then(response => response.json())
-            .then(data => {
-                fullPokemonList = data; // Store the full list in a variable
-                const input1 = document.getElementById('pokemon1_name');
-                const input2 = document.getElementById('pokemon2_name');
-                // Attach an input event listener to each input field
-                input1.addEventListener('input', () => filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList));
-                input2.addEventListener('input', () => filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList));
-                // Initially populate both datalists with all names
-                filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList);
-                filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList);
-            });
-    </script>
-</body>
-
-</html>
+    // Fetch the pokemon names and store them
+    let fullPokemonList = [];
+    fetch('/pokemon_names')
+        .then(response => response.json())
+        .then(data => {
+            fullPokemonList = data; // Store the full list in a variable
+            const input1 = document.getElementById('pokemon1_name');
+            const input2 = document.getElementById('pokemon2_name');
+            // Attach an input event listener to each input field
+            input1.addEventListener('input', () => filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList));
+            input2.addEventListener('input', () => filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList));
+            // Initially populate both datalists with all names
+            filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList);
+            filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList);
+        });
+</script>
+{% endblock %}

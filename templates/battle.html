@@ -1,29 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Battle Result</title>
-</head>
+{% block content %}
+<h1>Battle Result</h1>
 
-<body>
-    <h1>Battle Result</h1>
-
-    <div class="battle">
-        <div class="pokemon" id="pokemon1">
-            <h2>{{ pokemon1.name | capitalize }}</h2>
-            <img src="{{ pokemon1.sprite }}" alt="{{ pokemon1.name }}" />
-        </div>
-
-        <div class="pokemon" id="pokemon2">
-            <h2>{{ pokemon2.name | capitalize }}</h2>
-            <img src="{{ pokemon2.sprite }}" alt="{{ pokemon2.name }}" />
-        </div>
+<div class="battle">
+    <div class="pokemon" id="pokemon1">
+        <h2>{{ pokemon1.name | capitalize }}</h2>
+        <img src="{{ pokemon1.sprite }}" alt="{{ pokemon1.name }}" />
     </div>
 
-    <h2>Winner: {{ winner | capitalize }}</h2>
+    <div class="pokemon" id="pokemon2">
+        <h2>{{ pokemon2.name | capitalize }}</h2>
+        <img src="{{ pokemon2.sprite }}" alt="{{ pokemon2.name }}" />
+    </div>
+</div>
 
-    <a href="/">Battle again</a>
-</body>
+<h2>Winner: {{ winner | capitalize }}</h2>
 
-</html>
+<a href="/">Battle again</a>
+{% endblock %}
