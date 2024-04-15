@@ -7,6 +7,25 @@ Sprites for typesretrieved from https://github.com/msikma/pokesprite
 <br>
 Frontend with HTML/Jinja
 
+## Details of battle simulation
+
+Pokemon base stats, and effort values for each stat are extracted from [pokeapi.co](pokeapi.co). 
+<br>
+The actual stats used in the battle simulation are calculated based on these data, chosen level and a random "individual value": 
+<br> 
+see `update_stats` method within the `Pokemon` class (utils.py) for full details.
+<br>
+In the actual battle simulation (see `battle_simlator()` in utils.py) the pokemon with the highest speed becomes the first attacker.  
+<br>
+In the case of equal speed, a random pokemon is chosen. After each round, the defender and attacker switch roles, until one of the 
+<br>
+pokemon loses (HP reaches 0). During the battle, the cumulative type advantages across types for the
+<br>
+attacker are assessed against all the types that the defender has. The type advantages are `data/types.csv` based on [here](https://pokemondb.net/type).
+<br>
+Ff an attacker has a type that has no effect on one of the types the defender has, then the calculated damage is 0.
+
+
 # General
 
 Can run with poetry locally, or with docker
