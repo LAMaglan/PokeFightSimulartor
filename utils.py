@@ -206,7 +206,6 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
     turn = 0
     prev_attacker_name = attacker.name
 
-    # while pokemon1.hp_updated > 0 and pokemon2.hp_updated > 0:
     while attacker.hp_updated > 0 and defender.hp_updated > 0:
 
         # sanity check
