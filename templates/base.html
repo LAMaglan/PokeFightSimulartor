@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon App</title>
+    <title>{% block title %}Pokemon App{% endblock title %}</title>
+    {% block head %}{% endblock head %}
     <style>
         /* Add your common CSS styling here */
         body {
@@ -40,7 +41,8 @@
 
     <main>
         {% block content %}
-        {% endblock %}
+        <!-- The content block can be overridden by child templates -->
+        {% endblock content %}
     </main>
 
     <footer>
