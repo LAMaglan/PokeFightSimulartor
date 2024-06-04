@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
+<head>
+    <title>{% block title %}Pokemon types{% endblock title %}</title>
+</head>
+
 {% block head %}
-{{ super() }}
 <link rel="stylesheet" href="/static/css/types_style.css">
 {% endblock %}
 
