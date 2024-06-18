@@ -35,7 +35,7 @@
     <label for="pokemon2_level">Level:</label><br>
     <input type="number" id="pokemon2_level" name="pokemon2_level" min="1" max="100" value="5"><br><br>
 
-    <input type="submit" value="Battle!">
+    <input type="submit" id="battleButton" value="Battle!" disabled>
 </form>
 
 <script>
@@ -78,5 +78,17 @@
             filterDatalist(input1, document.getElementById('pokemon_list1'), fullPokemonList);
             filterDatalist(input2, document.getElementById('pokemon_list2'), fullPokemonList);
         });
+
+    function toggleBattleButton() {
+        const pokemon1Name = document.getElementById('pokemon1_name').value;
+        const pokemon2Name = document.getElementById('pokemon2_name').value;
+        const isBothPokemonSelected = pokemon1Name.trim() !== '' && pokemon2Name.trim() !== '';
+
+        document.getElementById('battleButton').disabled = !isBothPokemonSelected;
+    }
+
+    // Add input event listeners to both input fields, that calls toggleBattleButton()
+    document.getElementById('pokemon1_name').addEventListener('input', toggleBattleButton);
+    document.getElementById('pokemon2_name').addEventListener('input', toggleBattleButton);
 </script>
 {% endblock %}
