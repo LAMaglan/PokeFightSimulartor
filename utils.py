@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from fastapi import HTTPException
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import random
 import csv
 from logging_config import get_logger
@@ -176,8 +176,67 @@ async def get_pokemon(pokemon_name: str):
             )
 
 
-def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
+def determine_attacker(pokemon1: Pokemon, pokemon2: Pokemon) -> Tuple[Pokemon, Pokemon]:
+    if pokemon1.speed_updated == pokemon2.speed_updated:
+        attacker = random.choice([pokemon1, pokemon2])
+        defender = pokemon2 if attacker == pokemon1 else pokemon1
+    else:
+        attacker, defender = (
+            (pokemon1, pokemon2) if pokemon1.speed_updated > pokemon2.speed_updated else (pokemon2, pokemon1)
+        )
+    return attacker, defender
 
+def sanity_check_attacker(turn: int, prev_attacker_name: str, current_attacker_name: str):
+    if prev_attacker_name is current_attacker_name == prev_attacker_name and turn != 1:
+        raise ValueError(f"Attacker {current_attacker_name} is the same in consecutive rounds!")
+
+def calculate_round_damage(attacker: Pokemon, defender: Pokemon, type_advantages: dict) -> float:
+    attack_power = (
+        attacker.attack_updated + attacker.special_attack_updated
+    ) / 2
+    defense_power = (
+        defender.defense_updated + defender.special_defense_updated
+    ) / 2
+
+    damage = calculate_damage(attacker.level, attack_power, defense_power)
+
+    type_effectiveness = 1
+    for defending_type in defender.types:
+        effectiveness = 1
+        for attack_type in attacker.types:
+            effectiveness *= type_advantages.get(attack_type, {}).get(defending_type, 1)
+        type_effectiveness *= effectiveness
+
+    damage *= type_effectiveness
+    return damage
+
+def perform_attack(attacker: Pokemon, defender: Pokemon, type_advantages: dict):
+    # assuming one iteration is meant for the loop
+    damage = calculate_round_damage(attacker, defender, type_advantages)
+    defender.hp_updated -= damage
+
+def battle_loop(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict) -> str:
+    attacker, defender = determine_attacker(pokemon1, pokemon2)
+    turn = 0
+    prev_attacker_name = attacker.name
+
+    while attacker.hp_updated > 0 and defender.hp_updated > 0:
+        turn += 1
+        sanity_check_attacker(turn, prev_attacker_name, attacker.name)
+        prev_attacker_name = attacker.name
+
+        logger.info(
+            f"Battle simulator --- This is round {turn}. The attacker is {attacker.name} \
+            and the defender is {defender.name}. The defender has HP {defender.hp_updated}"
+        )
+
+        perform_attack(attacker, defender, type_advantages)
+
+        attacker, defender = defender, attacker
+
+    return defender.name if attacker.hp_updated <= 0 else attacker.name
+
+def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict):
     pokemon1.stats_modifier()
     pokemon2.stats_modifier()
 
@@ -188,75 +247,4 @@ def battle_simulator(pokemon1: Pokemon, pokemon2: Pokemon, type_advantages: dict
         f"Battle simulator --- pokemon2: {pokemon2.name} has speed {pokemon2.speed_updated}"
     )
 
-    # Determine attacker
-    # Randomly choose if both pokemon have same speed
-    if pokemon1.speed_updated == pokemon2.speed_updated:
-
-        attacker = random.choice([pokemon1, pokemon2])
-        defender = pokemon2 if attacker == pokemon1 else pokemon1
-    else:
-        # Pick pokemon with higher speed
-        attacker, defender = (
-            (pokemon1, pokemon2)
-            if pokemon1.speed_updated > pokemon2.speed_updated
-            else (pokemon2, pokemon1)
-        )
-
-    # for sanity check
-    turn = 0
-    prev_attacker_name = attacker.name
-
-    while attacker.hp_updated > 0 and defender.hp_updated > 0:
-
-        # sanity check
-        turn += 1
-        current_attacker_name = attacker.name
-
-        if (
-            prev_attacker_name is current_attacker_name == prev_attacker_name
-            and turn != 1
-        ):
-            raise ValueError(
-                f"Attacker {current_attacker_name} is the same in consecutive rounds!"
-            )
-
-        prev_attacker_name = current_attacker_name
-        logger.info(
-            f"Battle simulator --- This is round {turn}. The attacker is {attacker.name} and the defender is {defender.name}. The defender has HP {defender.hp_updated}"
-        )
-
-        # loop over types of the attacker, but collective used
-        for _ in attacker.types:
-
-            # For now, take average of "physical" and "special" stats
-            attack_power = (
-                attacker.attack_updated + attacker.special_attack_updated
-            ) / 2
-            defense_power = (
-                defender.defense_updated + defender.special_defense_updated
-            ) / 2
-
-            damage = calculate_damage(attacker.level, attack_power, defense_power)
-
-            type_effectiveness = 1
-
-            for defending_type in defender.types:
-
-                effectiveness = 1
-                for attack_type in attacker.types:
-
-                    # attacker effectiveness of each type across defender types
-                    effectiveness *= type_advantages.get(attack_type, {}).get(
-                        defending_type, 1
-                    )
-
-                # Collect cumulative type effectiveness of attacker
-                type_effectiveness *= effectiveness
-
-            # Apply type effectiveness to the damage
-            damage *= type_effectiveness
-            defender.hp_updated -= damage
-
-        attacker, defender = defender, attacker
-
-    return defender.name if attacker.hp_updated <= 0 else attacker.name
+    return battle_loop(pokemon1, pokemon2, type_advantages)
