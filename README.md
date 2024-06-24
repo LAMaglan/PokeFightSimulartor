@@ -7,6 +7,8 @@ Sprites for typesretrieved from https://github.com/msikma/pokesprite
 <br>
 Frontend with HTML/Jinja
 
+Note: a fair amount of help from ChatGPT throughout
+
 ## Details of battle simulation
 
 Pokemon base stats, and effort values for each stat are extracted from [pokeapi.co](pokeapi.co). 
