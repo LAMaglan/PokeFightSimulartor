@@ -7,10 +7,16 @@
 {% block content %}
 <h1>Pokemon Stats</h1>
 
-<audio autoplay>
+<audio id="pokemonCry" autoplay>
     <source src="https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/132.ogg" type="audio/ogg">
     Your browser does not support the audio element.
 </audio>
+
+<script>
+    // Set the volume to 50% as soon as the audio element can be played
+    var audio = document.getElementById('pokemonCry');
+    audio.volume = 0.1;
+</script>
 
 <h2>Pokemon: {{ pokemon.name }}</h2>
 
