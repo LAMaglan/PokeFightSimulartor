@@ -148,6 +148,13 @@ def extract_pokemon_base_stats(pokemon: Pokemon) -> dict:
     pokemon_stats = revert_stat_names(pokemon_stats)
     return pokemon_stats
 
+def get_preferred_cry(cries):
+    if 'latest' in cries and cries['latest']:
+        return cries['latest']
+    elif 'legacy' in cries and cries['legacy']:
+        return cries['legacy']
+    else:
+        return None
 
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
@@ -168,8 +175,9 @@ async def get_pokemon(pokemon_name: str):
             types = [t["type"]["name"] for t in pokemon_data["types"]]
             pokemon = Pokemon(name=pokemon_name, **stats, types=types)
             sprites = pokemon_data["sprites"]
+            cry = get_preferred_cry(pokemon_data["cries"])
 
-            return pokemon, sprites
+            return pokemon, sprites, cry
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
