@@ -105,7 +105,7 @@ See swagger docs in `/docs`, e.g.
 <br>
 ![index_example](https://github.com/LAMaglan/PokeFightSimulator/assets/29206211/564d3eb0-d0b6-42c4-b875-01fca96c518d)
 
-`pokemon_stats.html`
+`pokemon_details.html`
 <br>
 ![pokemon_stats_example](https://github.com/LAMaglan/PokeFightSimulator/assets/29206211/599298a2-9b7d-4b0c-8210-9314c574997f)
 
