@@ -163,6 +163,16 @@ def get_generations(generations: dict) -> list:
     generations =  [key for key in generations.keys() if key.startswith("generation")]
     return [gen.replace('generation-', '') for gen in generations]
 
+async def get_locations(location_encounter: dict) -> list:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(location_encounter)
+        if response.status_code == 200:
+            locations_details = response.json()
+            return [location_name["location_area"]["name"] for location_name in locations_details]
+        else:
+            raise HTTPException(
+                status_code=response.status_code, detail="Encounters for pokemon not found"
+            )
 
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
@@ -187,8 +197,9 @@ async def get_pokemon(pokemon_name: str):
             weight = pokemon_data["weight"] / 10 #kg
             height = pokemon_data["height"] / 10 #m
             generations = get_generations(pokemon_data["sprites"]["versions"])
+            locations = await get_locations(pokemon_data["location_area_encounters"])
 
-            return pokemon, sprites, cry, weight, height, generations
+            return pokemon, sprites, cry, weight, height, generations, locations
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
