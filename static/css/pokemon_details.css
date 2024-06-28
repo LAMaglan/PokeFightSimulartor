@@ -1,0 +1,19 @@
+table {
+    border-collapse: collapse;
+    table-layout: auto; /* Let the browser calculate column widths */
+    margin-left: 0 auto; /* Align table to the left */
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+th {
+    background-color: #f2f2f2;
+}
