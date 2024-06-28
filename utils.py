@@ -163,16 +163,52 @@ def get_generations(generations: dict) -> list:
     generations =  [key for key in generations.keys() if key.startswith("generation")]
     return [gen.replace('generation-', '') for gen in generations]
 
-async def get_locations(location_encounter: dict) -> list:
+async def get_location_area_encounters(location_encounter: dict) -> list:
     async with httpx.AsyncClient() as client:
         response = await client.get(location_encounter)
         if response.status_code == 200:
-            locations_details = response.json()
-            return [location_name["location_area"]["name"] for location_name in locations_details]
+            details = response.json()
+            return [location_name["location_area"]["url"] for location_name in details]
         else:
             raise HTTPException(
-                status_code=response.status_code, detail="Encounters for pokemon not found"
+                status_code=response.status_code, detail="Encounter for pokemon not found"
             )
+
+async def get_location_areas(location_encounter: list) -> list:
+    location_areas = await get_location_area_encounters(location_encounter)
+    async with httpx.AsyncClient() as client:
+        location_url = []
+        for location_area in location_areas:
+            response = await client.get(location_area)
+            if response.status_code == 200:
+                location_area_json = response.json()
+                location_url.append({"area": location_area_json["location"]["name"], "location_url": location_area_json["location"]["url"]})
+            else:
+                raise HTTPException(
+                    status_code=response.status_code, detail="Location area for pokemon not found"
+                )
+        return location_url
+
+async def get_locations(location_encounter: list) -> list:
+    """
+    Return the name of the area, and its parent region
+    """
+    locations = await get_location_areas(location_encounter)
+    async with httpx.AsyncClient() as client:
+        location_use = []
+        for location in locations:
+            response = await client.get(location["location_url"])
+            if response.status_code == 200:
+                location_json = response.json()
+                location_use.append({"area": location["area"], "region": location_json["region"]["name"]})
+            else:
+                raise HTTPException(
+                    status_code=response.status_code, detail="Location for pokemon not found"
+                )
+        return location_use
+
+        
+
 
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"

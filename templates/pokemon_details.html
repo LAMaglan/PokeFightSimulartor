@@ -76,7 +76,12 @@
 <p>Weight: {{ weight }} kg</p>
 <p>Height: {{ height }} m</p>
 <p>Available in generations: {{ generations | join(', ') }}</p>
-<p>Can be found in locations: {{ locations | join(', ') }}</p>
+<h3>Can be found in locations:</h3>
+<p>
+  {% for location in locations %}
+    {{ location.area }} ({{ location.region }}){% if not loop.last %}, {% endif %}
+  {% endfor %}
+</p>
 <br>
 <a href="/">Search again</a>
 {% endblock %}
