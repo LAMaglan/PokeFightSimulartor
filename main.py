@@ -119,7 +119,7 @@ async def read_pokemon(request: Request, pokemon_name: str):
         pokemon_stats = extract_pokemon_base_stats(pokemon)
 
         response = templates.TemplateResponse(
-            "pokemon_stats.html",
+            "pokemon_details.html",
             {
                 "request": request,
                 "pokemon": {
