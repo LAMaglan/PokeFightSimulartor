@@ -12,11 +12,13 @@ from utils import (
     get_pokemon,
     battle_simulator,
 )
+from locations import router as locations_router
 
 # __name__ will set logger name as the file name: 'main'
 logger = get_logger(__name__)
 
 app = FastAPI()
+app.include_router(locations_router)
 
 templates = Jinja2Templates(directory="templates")
 
@@ -114,7 +116,7 @@ async def read_pokemon(request: Request, pokemon_name: str):
     try:
         logger.info(f"Fetching data for {pokemon_name}.")
 
-        pokemon, pokemon_sprites, cry, weight, height, generations, locations = await get_pokemon(pokemon_name)
+        pokemon, pokemon_sprites, cry, weight, height, generations = await get_pokemon(pokemon_name)
         pokemon_types = pokemon.types
         pokemon_stats = extract_pokemon_base_stats(pokemon)
 
@@ -131,8 +133,7 @@ async def read_pokemon(request: Request, pokemon_name: str):
                 "cry": cry,
                 "weight": weight,
                 "height": height,
-                "generations": generations,
-                "locations": locations
+                "generations": generations
             },
         )
         logger.info(f"Data for {pokemon_name} successfully fetched and returned.")
@@ -140,7 +141,6 @@ async def read_pokemon(request: Request, pokemon_name: str):
     except HTTPException as exc:
         logger.error(f"Error fetching data for {pokemon_name}: {str(exc)}")
         raise
-
 
 @app.get("/battle")
 async def battle(
@@ -154,12 +154,12 @@ async def battle(
         (
             pokemon1,
             pokemon1_sprites,
-            _, _, _, _, _
+            _, _, _, _
         ) = await get_pokemon(pokemon1_name)
         (
             pokemon2,
             pokemon2_sprites,
-            _, _, _, _, _
+            _, _, _, _
         ) = await get_pokemon(pokemon2_name)
 
         # passed on from index.html
