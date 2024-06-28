@@ -114,7 +114,7 @@ async def read_pokemon(request: Request, pokemon_name: str):
     try:
         logger.info(f"Fetching data for {pokemon_name}.")
 
-        pokemon, pokemon_sprites, cry = await get_pokemon(pokemon_name)
+        pokemon, pokemon_sprites, cry, weight, height = await get_pokemon(pokemon_name)
         pokemon_types = pokemon.types
         pokemon_stats = extract_pokemon_base_stats(pokemon)
 
@@ -128,7 +128,9 @@ async def read_pokemon(request: Request, pokemon_name: str):
                     "types": pokemon_types,
                 },
                 "pokemon_stats": pokemon_stats,
-                "cry": cry
+                "cry": cry,
+                "weight": weight,
+                "height": height
             },
         )
         logger.info(f"Data for {pokemon_name} successfully fetched and returned.")
@@ -150,12 +152,12 @@ async def battle(
         (
             pokemon1,
             pokemon1_sprites,
-            _
+            _, _, _
         ) = await get_pokemon(pokemon1_name)
         (
             pokemon2,
             pokemon2_sprites,
-            _
+            _, _, _
         ) = await get_pokemon(pokemon2_name)
 
         # passed on from index.html
