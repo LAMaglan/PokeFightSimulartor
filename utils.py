@@ -163,65 +163,43 @@ def get_generations(generations: dict) -> list:
     generations =  [key for key in generations.keys() if key.startswith("generation")]
     return [gen.replace('generation-', '') for gen in generations]
 
-async def get_location_area_encounters(location_encounter: dict) -> list:
+async def fetch_json(url: str) -> dict:
     async with httpx.AsyncClient() as client:
-        response = await client.get(location_encounter)
+        response = await client.get(url)
         if response.status_code == 200:
-            details = response.json()
-            return [location_name["location_area"]["url"] for location_name in details]
+            return response.json()
         else:
             raise HTTPException(
-                status_code=response.status_code, detail="Encounter for pokemon not found"
+                status_code=response.status_code, detail="Resource not found at URL: " + url
             )
 
-def locations_within_regions(locations: list) -> defaultdict:
+async def get_locations(location_encounter_url: str) -> defaultdict:
     """
-    Created a nested dict collecting each area that belong together
-    in a region. The input is a list of dicts, where each dict contains
-    area and region
+    Returns a nested dictionary organized by region, with each region mapping to a list
+    of unique area names within that region.
+
+    Assumes the provided URL yields a JSON response in a specific structure,
+    with relevant data at 'location_area' -> 'location' -> 'region'.
     """
     nested_locations = defaultdict(list)
-    for location in locations:
-        nested_locations[location["region"]].append(location["area"])
 
-    # Remove possible duplicates by converting to a set and back to a list if required
+    # Fetch the list of location areas encounters
+    location_area_urls = [location["location_area"]["url"] for location in await fetch_json(location_encounter_url)]
+
+    # Iterate through each location area URL to fetch the area and region
+    for location_area_url in location_area_urls:
+        location_area_json = await fetch_json(location_area_url)
+        location_json = await fetch_json(location_area_json["location"]["url"])
+        
+        area = location_area_json["location"]["name"]
+        region = location_json["region"]["name"]
+        nested_locations[region].append(area)
+
+    # Deduplicate the areas within each region
     for region in nested_locations:
         nested_locations[region] = list(set(nested_locations[region]))
 
     return nested_locations
-
-async def get_location_areas(location_encounter: list) -> list:
-    location_areas = await get_location_area_encounters(location_encounter)
-    async with httpx.AsyncClient() as client:
-        location_url = []
-        for location_area in location_areas:
-            response = await client.get(location_area)
-            if response.status_code == 200:
-                location_area_json = response.json()
-                location_url.append({"area": location_area_json["location"]["name"], "location_url": location_area_json["location"]["url"]})
-            else:
-                raise HTTPException(
-                    status_code=response.status_code, detail="Location area for pokemon not found"
-                )
-        return location_url
-
-async def get_locations(location_encounter: list) -> list:
-    """
-    Return the name of the area, and its parent region
-    """
-    locations = await get_location_areas(location_encounter)
-    async with httpx.AsyncClient() as client:
-        location_use = []
-        for location in locations:
-            response = await client.get(location["location_url"])
-            if response.status_code == 200:
-                location_json = response.json()
-                location_use.append({"area": location["area"], "region": location_json["region"]["name"]})
-            else:
-                raise HTTPException(
-                    status_code=response.status_code, detail="Location for pokemon not found"
-                )
-        return location_use
 
         
 
@@ -251,7 +229,7 @@ async def get_pokemon(pokemon_name: str):
             generations = get_generations(pokemon_data["sprites"]["versions"])
             locations = await get_locations(pokemon_data["location_area_encounters"])
 
-            return pokemon, sprites, cry, weight, height, generations, locations_within_regions(locations)
+            return pokemon, sprites, cry, weight, height, generations, locations
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
