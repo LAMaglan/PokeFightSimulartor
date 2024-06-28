@@ -4,6 +4,10 @@
     <title>{% block title %}Pokemon details{% endblock title %}</title>
 </head>
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/pokemon_details.css">
+{% endblock %}
+
 {% block content %}
 <h1>Pokemon Details</h1>
 
@@ -67,6 +71,6 @@
     {% endfor %}
     </tbody>
 </table>
-
+<br>
 <a href="/">Search again</a>
 {% endblock %}
