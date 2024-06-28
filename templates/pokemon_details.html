@@ -45,15 +45,28 @@
 </div>
 
 <h3>Base stats:</h3>
-<ul>
+<table>
+    <thead>
+        <tr>
+            <th>Stat</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
     {% for key, value in pokemon_stats.items() %}
-    {% if value is mapping %}
-    <p>{{ key }}: {{ value.get('base_stat') }}</p>
-    {% else %}
-    <p>{{ key }}: {{ value }}</p>
-    {% endif %}
+        <tr>
+            <td>{{ key.replace('_', ' ').capitalize() }}</td>
+            <td>
+                {% if value is mapping %}
+                    {{ value.get('base_stat') }}
+                {% else %}
+                    {{ value }}
+                {% endif %}
+            </td>
+        </tr>
     {% endfor %}
-</ul>
+    </tbody>
+</table>
 
 <a href="/">Search again</a>
 {% endblock %}
