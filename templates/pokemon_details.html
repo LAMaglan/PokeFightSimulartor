@@ -19,6 +19,33 @@
 <script>
     var audio = document.getElementById('pokemonCry');
     audio.volume = 0.1;
+
+    async function loadLocations(pokemonName) {
+        const button = document.getElementById('load-locations');
+        const container = document.getElementById('locations-container');
+        button.disabled = true;
+        
+        try {
+            const response = await fetch(`/pokemon/${pokemonName}/locations`);
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            const locationsData = await response.json();
+            
+            // Assuming locationsData is a dictionary with regions as keys and lists as values
+            const regionList = Object.entries(locationsData).map(([region, areas]) => {
+                const areaList = areas.join(', ');
+                return `<li>${region}: ${areaList}</li>`;
+            }).join('');
+            
+            container.innerHTML = `<ul>${regionList}</ul>`;
+        } catch (error) {
+            console.error('Error while fetching locations:', error);
+            container.innerHTML = `<p>Error loading locations: ${error.message}</p>`;
+        } finally {
+            button.disabled = false;
+        }
+    }
 </script>
 
 <h2>Pokemon: {{ pokemon.name }}</h2>
@@ -76,16 +103,10 @@
 <p>Weight: {{ weight }} kg</p>
 <p>Height: {{ height }} m</p>
 <p>Available in generations: {{ generations | join(', ') }}</p>
-<h3>Locations by Region:</h3>
-{% for region, areas in locations.items() %}
-    <h4>{{ region | capitalize }}:</h4>
-    <ul>
-    {% for area in areas %}
-        <!-- List each area, with underscores replaced by spaces, and in title case -->
-        <li>{{ area | replace('_', ' ') | title }}</li>  
-    {% endfor %}
-    </ul>
-{% endfor %}
+<button id="load-locations" onclick="loadLocations('{{ pokemon.name }}')">Load Locations</button>
+<div id="locations-container"></div>
+
+
 <br>
 <a href="/">Search again</a>
 {% endblock %}
