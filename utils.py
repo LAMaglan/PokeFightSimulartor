@@ -176,8 +176,10 @@ async def get_pokemon(pokemon_name: str):
             pokemon = Pokemon(name=pokemon_name, **stats, types=types)
             sprites = pokemon_data["sprites"]
             cry = get_preferred_cry(pokemon_data["cries"])
+            weight = pokemon_data["weight"] / 10 #kg
+            height = pokemon_data["height"] / 10 #m
 
-            return pokemon, sprites, cry
+            return pokemon, sprites, cry, weight, height
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
