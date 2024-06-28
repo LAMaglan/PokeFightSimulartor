@@ -76,12 +76,16 @@
 <p>Weight: {{ weight }} kg</p>
 <p>Height: {{ height }} m</p>
 <p>Available in generations: {{ generations | join(', ') }}</p>
-<h3>Can be found in locations:</h3>
-<p>
-  {% for location in locations %}
-    {{ location.area }} ({{ location.region }}){% if not loop.last %}, {% endif %}
-  {% endfor %}
-</p>
+<h3>Locations by Region:</h3>
+{% for region, areas in locations.items() %}
+    <h4>{{ region | capitalize }}:</h4>
+    <ul>
+    {% for area in areas %}
+        <!-- List each area, with underscores replaced by spaces, and in title case -->
+        <li>{{ area | replace('_', ' ') | title }}</li>  
+    {% endfor %}
+    </ul>
+{% endfor %}
 <br>
 <a href="/">Search again</a>
 {% endblock %}

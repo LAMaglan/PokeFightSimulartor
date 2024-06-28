@@ -5,7 +5,7 @@ import random
 import csv
 from logging_config import get_logger
 import httpx
-
+from collections import defaultdict
 
 # __name__ will set logger name as the file name: 'utils'
 logger = get_logger(__name__)
@@ -174,6 +174,22 @@ async def get_location_area_encounters(location_encounter: dict) -> list:
                 status_code=response.status_code, detail="Encounter for pokemon not found"
             )
 
+def locations_within_regions(locations: list) -> defaultdict:
+    """
+    Created a nested dict collecting each area that belong together
+    in a region. The input is a list of dicts, where each dict contains
+    area and region
+    """
+    nested_locations = defaultdict(list)
+    for location in locations:
+        nested_locations[location["region"]].append(location["area"])
+
+    # Remove possible duplicates by converting to a set and back to a list if required
+    for region in nested_locations:
+        nested_locations[region] = list(set(nested_locations[region]))
+
+    return nested_locations
+
 async def get_location_areas(location_encounter: list) -> list:
     location_areas = await get_location_area_encounters(location_encounter)
     async with httpx.AsyncClient() as client:
@@ -235,7 +251,7 @@ async def get_pokemon(pokemon_name: str):
             generations = get_generations(pokemon_data["sprites"]["versions"])
             locations = await get_locations(pokemon_data["location_area_encounters"])
 
-            return pokemon, sprites, cry, weight, height, generations, locations
+            return pokemon, sprites, cry, weight, height, generations, locations_within_regions(locations)
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
