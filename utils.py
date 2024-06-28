@@ -156,6 +156,14 @@ def get_preferred_cry(cries):
     else:
         return None
 
+def get_generations(generations: dict) -> list:
+    """
+    In pokeapi, stored as : generation-i, generation-ii, etc.
+    """
+    generations =  [key for key in generations.keys() if key.startswith("generation")]
+    return [gen.replace('generation-', '') for gen in generations]
+
+
 async def get_pokemon(pokemon_name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
     async with httpx.AsyncClient() as client:
@@ -178,8 +186,9 @@ async def get_pokemon(pokemon_name: str):
             cry = get_preferred_cry(pokemon_data["cries"])
             weight = pokemon_data["weight"] / 10 #kg
             height = pokemon_data["height"] / 10 #m
+            generations = get_generations(pokemon_data["sprites"]["versions"])
 
-            return pokemon, sprites, cry, weight, height
+            return pokemon, sprites, cry, weight, height, generations
         else:
             raise HTTPException(
                 status_code=response.status_code, detail="Pokemon not found"
